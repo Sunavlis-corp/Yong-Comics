@@ -209,7 +209,7 @@ main { flex: 1; padding-bottom: 80px; }
 }
 .filter-btn:hover:not(.active) { color: var(--fg); border-color: rgba(255,255,255,0.2); }
 
-/* ── FEATURED HERO ── */
+/* ── TRENDING HERO ── */
 .hero-wrap { padding: 12px 20px 0; }
 @media (min-width: 768px) { .hero-wrap { padding: 16px 24px 0; } }
 
@@ -217,7 +217,7 @@ main { flex: 1; padding-bottom: 80px; }
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  aspect-ratio: 4/5;
+  aspect-ratio: 16/9;
   background: var(--surface);
   cursor: pointer;
 }
@@ -347,17 +347,6 @@ main { flex: 1; padding-bottom: 80px; }
   backdrop-filter: blur(6px);
 }
 
-.card-type {
-  position: absolute; top: 8px; right: 8px;
-  display: inline-flex; align-items: center; gap: 3px;
-  background: rgba(10,10,12,0.75);
-  padding: 2px 7px; border-radius: 999px;
-  font-size: 9px; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--muted);
-  backdrop-filter: blur(6px);
-}
-
 .card-meta {
   position: absolute; bottom: 8px; left: 8px; right: 8px;
 }
@@ -370,6 +359,133 @@ main { flex: 1; padding-bottom: 80px; }
   font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--muted); margin-top: 2px;
 }
+
+/* ── STAR RATING ── */
+.card-stars {
+  display: flex; align-items: center; gap: 3px;
+  margin-top: 6px; padding: 0 2px;
+}
+.stars {
+  display: flex; gap: 1px;
+}
+.star { font-size: 11px; line-height: 1; }
+.star.full  { color: var(--gold); }
+.star.half  { color: var(--gold); opacity: 0.6; }
+.star.empty { color: var(--muted); opacity: 0.4; }
+.rating-num {
+  font-size: 10px; font-weight: 700;
+  color: var(--muted); margin-left: 2px;
+}
+
+/* ── DETAIL POPUP ── */
+#detail-popup {
+  position: fixed; inset: 0; z-index: 150;
+  display: none; align-items: flex-end; justify-content: center;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+}
+#detail-popup.open { display: flex; }
+
+.detail-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  animation: slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+  overflow: hidden;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.detail-cover-wrap {
+  position: relative;
+  width: 100%; aspect-ratio: 16/9;
+  overflow: hidden;
+}
+.detail-cover-wrap img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.detail-cover-wrap .bg-veil { position: absolute; inset: 0; }
+.detail-cover-wrap .bg-veil-top { position: absolute; inset: 0; }
+
+.detail-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(10,10,12,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; z-index: 2;
+  cursor: pointer;
+}
+
+.detail-origin-badge {
+  position: absolute; bottom: 12px; left: 12px;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(28,28,38,0.85);
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.detail-body { padding: 16px 20px 20px; }
+
+.detail-genre-tag {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--primary);
+  background: var(--primary-dim);
+  color: var(--primary);
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.detail-title {
+  font-family: var(--font-title);
+  font-size: 28px; letter-spacing: 2px;
+  line-height: 1; color: var(--fg);
+  margin-bottom: 2px;
+}
+.detail-kr {
+  font-size: 12px; color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.detail-stars {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 12px;
+}
+.detail-rating-num {
+  font-size: 13px; font-weight: 700; color: var(--gold);
+}
+.detail-rating-count {
+  font-size: 11px; color: var(--muted);
+}
+
+.detail-desc {
+  font-size: 13px; color: rgba(240,238,232,0.75);
+  line-height: 1.65; margin-bottom: 20px;
+}
+
+.btn-read-now {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-family: var(--font-title);
+  font-size: 20px; letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--primary), #b5001f);
+  color: #fff;
+  box-shadow: var(--glow);
+  transition: opacity 0.2s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-read-now:hover  { opacity: 0.92; }
+.btn-read-now:active { transform: scale(0.98); }
 
 /* ── GRID (desktop) ── */
 .cards-grid {
@@ -674,10 +790,10 @@ input[type=range].page-range::-webkit-slider-thumb {
           <div class="checkin-icon">🔥</div>
           <div class="checkin-text">
             <p>Daily Check-in</p>
-            <p>Day 1 of 7 · Read to earn dragon coins</p>
+            <p>Day 1 of 7 · Read to earn Yong Points</p>
           </div>
         </div>
-        <button class="btn-checkin" onclick="showToast('🐉 +10 Dragon Coins earned!')">Check in</button>
+        <button class="btn-checkin" onclick="showToast('🐉 +10 Yong Points earned!')">Check in</button>
       </div>
 
       <!-- Genre filters -->
@@ -694,13 +810,13 @@ input[type=range].page-range::-webkit-slider-thumb {
 
       <!-- Hero featured -->
       <div class="hero-wrap fade-in stagger-3">
-        <div class="hero" onclick="openComic(0)">
+        <div class="hero" onclick="showPopup(0)">
           <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=900&q=80" alt="Iron Tide">
           <div class="overlay-veil bg-veil"></div>
           <div class="overlay-top bg-veil-top"></div>
           <div class="hero-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>
-            Featured
+            Trending
           </div>
           <div class="hero-content">
             <div class="hero-origin">🇳🇬 <span>Nigeria</span></div>
@@ -769,7 +885,7 @@ input[type=range].page-range::-webkit-slider-thumb {
           </div>
           <div class="stat-item">
             <div class="stat-value">0</div>
-            <div class="stat-label">🪙 Coins</div>
+            <div class="stat-label">🪙 Points</div>
           </div>
         </div>
       </div>
@@ -837,6 +953,33 @@ input[type=range].page-range::-webkit-slider-thumb {
   </div>
 </div>
 
+<!-- DETAIL POPUP -->
+<div id="detail-popup" onclick="handlePopupBackdrop(event)">
+  <div class="detail-sheet" id="detail-sheet">
+    <div class="detail-cover-wrap">
+      <img id="detail-img" src="" alt="">
+      <div class="bg-veil"></div>
+      <div class="bg-veil-top"></div>
+      <button class="detail-close" onclick="closePopup()">✕</button>
+      <div class="detail-origin-badge" id="detail-origin"></div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-genre-tag" id="detail-genre"></div>
+      <div class="detail-title" id="detail-title"></div>
+      <div class="detail-kr" id="detail-kr"></div>
+      <div class="detail-stars">
+        <div class="stars" id="detail-stars-row"></div>
+        <span class="detail-rating-num" id="detail-rating-num"></span>
+        <span class="detail-rating-count" id="detail-rating-count"></span>
+      </div>
+      <div class="detail-desc" id="detail-desc"></div>
+      <button class="btn-read-now" id="detail-read-btn" onclick="startReading()">
+        🐉 READ NOW
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -857,6 +1000,7 @@ const COMICS = [
     type: 'Chapters',
     cover: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80',
     blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
+    rating: 4.8, ratingCount: 124,
     desc: 'A disgraced soldier returns to Lagos to find his city overrun by a shadow army no one believes exists.',
     pages: [
       'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=720&q=80',
@@ -874,6 +1018,7 @@ const COMICS = [
     type: 'Chapters',
     cover: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
     blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
+    rating: 4.5, ratingCount: 89,
     desc: 'A young pianist returns to her grandmother\'s seaside village and finds a letter that was never sent.',
     pages: [
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=720&q=80',
@@ -890,6 +1035,7 @@ const COMICS = [
     type: 'Pages',
     cover: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?w=400&q=80',
     blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
+    rating: 4.2, ratingCount: 56,
     desc: 'A retired calligrapher discovers a hidden compartment in his late wife\'s writing desk — full of unsent letters.',
     pages: [
       'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?w=720&q=80',
@@ -906,6 +1052,7 @@ const COMICS = [
     type: 'Pages',
     cover: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&q=80',
     blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
+    rating: 4.6, ratingCount: 203,
     desc: 'Earth\'s last signal reaches a colony ship 40 years too late. The crew must decide whether to turn back.',
     pages: [
       'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=720&q=80',
@@ -922,6 +1069,7 @@ const COMICS = [
     type: 'Chapters',
     cover: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80',
     blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
+    rating: 4.3, ratingCount: 71,
     desc: 'Five strangers cross paths at a Lagos bus stop. One night. One decision. Five different lives changed forever.',
     pages: [
       'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=720&q=80',
@@ -937,6 +1085,7 @@ const COMICS = [
     type: 'Pages',
     cover: 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?w=400&q=80',
     blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
+    rating: 4.7, ratingCount: 148,
     desc: 'A radio operator in rural Scotland begins receiving transmissions from a frequency that doesn\'t exist.',
     pages: [
       'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?w=720&q=80',
@@ -975,19 +1124,32 @@ function renderCards(rowId, gridId, comics) {
   });
 }
 
+function starsHTML(rating) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    if (rating >= i)        s += '<span class="star full">★</span>';
+    else if (rating >= i-0.5) s += '<span class="star half">★</span>';
+    else                    s += '<span class="star empty">★</span>';
+  }
+  return s;
+}
+
 function cardHTML(c, cls, isGrid = false) {
-  const coverCls  = isGrid ? 'grid-card-cover' : 'comic-card-cover';
+  const coverCls = isGrid ? 'grid-card-cover' : 'comic-card-cover';
   return `
-  <div class="${cls}" onclick="openComic(${c.id})">
+  <div class="${cls}" onclick="showPopup(${c.id})">
     <div class="${coverCls}">
       <img src="${c.cover}" alt="${c.title}" loading="lazy">
       <div class="bg-veil"></div>
       <div class="card-origin">${c.origin}</div>
-      <div class="card-type">${c.type === 'Chapters' ? '📖' : '🖼️'} ${c.type}</div>
       <div class="card-meta">
         <div class="card-meta-title">${c.title}</div>
         <div class="card-meta-ep">${c.ep} · ${c.genre}</div>
       </div>
+    </div>
+    <div class="card-stars">
+      <div class="stars">${starsHTML(c.rating)}</div>
+      <span class="rating-num">${c.rating.toFixed(1)}</span>
     </div>
   </div>`;
 }
@@ -1014,6 +1176,46 @@ function showView(view) {
   });
 
   currentView = view;
+}
+
+// ══════════════════════════════════════════
+//  DETAIL POPUP
+// ══════════════════════════════════════════
+let activeComicId = null;
+
+function showPopup(id) {
+  const c = COMICS.find(x => x.id === id);
+  if (!c) return;
+  activeComicId = id;
+
+  document.getElementById('detail-img').src          = c.cover;
+  document.getElementById('detail-img').alt          = c.title;
+  document.getElementById('detail-origin').textContent = c.origin;
+  document.getElementById('detail-genre').textContent  = c.genre;
+  document.getElementById('detail-title').textContent  = c.title;
+  document.getElementById('detail-kr').textContent     = `${c.kr} · ${c.ep}`;
+  document.getElementById('detail-desc').textContent   = c.desc;
+  document.getElementById('detail-stars-row').innerHTML = starsHTML(c.rating);
+  document.getElementById('detail-rating-num').textContent   = c.rating.toFixed(1);
+  document.getElementById('detail-rating-count').textContent = `(${c.ratingCount} ratings)`;
+
+  document.getElementById('detail-popup').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePopup() {
+  document.getElementById('detail-popup').classList.remove('open');
+  document.body.style.overflow = '';
+  activeComicId = null;
+}
+
+function handlePopupBackdrop(e) {
+  if (e.target === document.getElementById('detail-popup')) closePopup();
+}
+
+function startReading() {
+  closePopup();
+  openComic(activeComicId);
 }
 
 // ══════════════════════════════════════════
