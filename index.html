@@ -7,6 +7,9 @@
 <meta name="description" content="The dragon doesn't ask where you're from. It just breathes fire. Every genre. No limits.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 /* ── RESET & TOKENS ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -790,10 +793,10 @@ input[type=range].page-range::-webkit-slider-thumb {
           <div class="checkin-icon">🔥</div>
           <div class="checkin-text">
             <p>Daily Check-in</p>
-            <p>Day 1 of 7 · Read to earn Yong Points</p>
+            <p id="checkin-subtext">Day 1 of 7 · Read to earn Yong Points</p>
           </div>
         </div>
-        <button class="btn-checkin" onclick="showToast('🐉 +10 Yong Points earned!')">Check in</button>
+        <button class="btn-checkin" id="checkin-btn" onclick="doCheckin()">Check in</button>
       </div>
 
       <!-- Genre filters -->
@@ -870,21 +873,21 @@ input[type=range].page-range::-webkit-slider-thumb {
     <div id="profile-view">
       <div class="view-title">⚔️ PROFILE</div>
       <div class="profile-card">
-        <div class="profile-avatar">🐉</div>
-        <div class="profile-name">Dragon Reader</div>
-        <div class="profile-handle">@reader · Joined 2026</div>
-        <div class="profile-badge">🔥 Day 1 Streak</div>
+        <div class="profile-avatar" id="profile-avatar">🐉</div>
+        <div class="profile-name" id="profile-name">Loading…</div>
+        <div class="profile-handle" id="profile-handle">@yongreader</div>
+        <div class="profile-badge" id="profile-streak">🔥 Day 1 Streak</div>
         <div class="stat-row">
           <div class="stat-item">
-            <div class="stat-value">0</div>
+            <div class="stat-value" id="stat-read">0</div>
             <div class="stat-label">Read</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">0</div>
+            <div class="stat-value" id="stat-saved">0</div>
             <div class="stat-label">Saved</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">0</div>
+            <div class="stat-value" id="stat-points">0</div>
             <div class="stat-label">🪙 Points</div>
           </div>
         </div>
@@ -1102,14 +1105,6 @@ let readerPage  = 1;
 let currentGenre = 'All';
 
 // ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  renderCards('trending-row', 'trending-grid', COMICS);
-  renderCards('new-row', 'new-grid', [...COMICS].reverse());
-});
-
-// ══════════════════════════════════════════
 //  CARD RENDERING
 // ══════════════════════════════════════════
 function renderCards(rowId, gridId, comics) {
@@ -1214,8 +1209,10 @@ function handlePopupBackdrop(e) {
 }
 
 function startReading() {
+  const id = activeComicId;
   closePopup();
-  openComic(activeComicId);
+  openComic(id);
+  trackRead(id);
 }
 
 // ══════════════════════════════════════════
@@ -1368,6 +1365,184 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ══════════════════════════════════════════
+//  🔥 FIREBASE INIT
+// ══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyCJjC9pOMlJ_OgSaIfHCweSeXHve4GCFLY",
+  authDomain:        "yong-comics.firebaseapp.com",
+  projectId:         "yong-comics",
+  storageBucket:     "yong-comics.firebasestorage.app",
+  messagingSenderId: "271959806022",
+  appId:             "1:271959806022:web:7f28881aeec1d381fc7a47"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ══════════════════════════════════════════
+//  🐉 TELEGRAM + USER INIT
+// ══════════════════════════════════════════
+const tg   = window.Telegram?.WebApp;
+let tgUser = null;
+let userDoc = null; // live Firestore data
+
+async function initApp() {
+  // Tell Telegram the app is ready and go fullscreen
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    tgUser = tg.initDataUnsafe?.user || null;
+  }
+
+  // Fallback for testing outside Telegram
+  if (!tgUser) {
+    tgUser = {
+      id: 'test_user_001',
+      first_name: 'Dragon',
+      last_name: 'Reader',
+      username: 'yongreader',
+      photo_url: null
+    };
+  }
+
+  await loadOrCreateUser(tgUser);
+  renderProfile();
+  updateCheckinUI();
+
+  // Render comics
+  renderCards('trending-row', 'trending-grid', COMICS);
+  renderCards('new-row', 'new-grid', [...COMICS].reverse());
+}
+
+// ── Get or create Firestore user doc ──
+async function loadOrCreateUser(u) {
+  const ref = db.collection('users').doc(String(u.id));
+  const snap = await ref.get();
+
+  if (snap.exists) {
+    userDoc = snap.data();
+  } else {
+    const now = new Date().toISOString();
+    userDoc = {
+      telegram_id:  String(u.id),
+      first_name:   u.first_name || 'Dragon',
+      last_name:    u.last_name  || '',
+      username:     u.username   || '',
+      photo_url:    u.photo_url  || '',
+      yong_points:  0,
+      streak:       0,
+      comics_read:  0,
+      comics_saved: 0,
+      last_checkin: null,
+      joined:       now
+    };
+    await ref.set(userDoc);
+  }
+}
+
+// ── Render profile page from userDoc ──
+function renderProfile() {
+  if (!userDoc) return;
+
+  const name = [userDoc.first_name, userDoc.last_name].filter(Boolean).join(' ');
+  document.getElementById('profile-name').textContent    = name || 'Dragon Reader';
+  document.getElementById('profile-handle').textContent  =
+    userDoc.username ? `@${userDoc.username}` : 'Yong Reader';
+  document.getElementById('stat-points').textContent     = userDoc.yong_points || 0;
+  document.getElementById('stat-read').textContent       = userDoc.comics_read  || 0;
+  document.getElementById('stat-saved').textContent      = userDoc.comics_saved || 0;
+  document.getElementById('profile-streak').textContent  =
+    `🔥 Day ${userDoc.streak || 1} Streak`;
+
+  // Avatar — photo or emoji
+  const avatarEl = document.getElementById('profile-avatar');
+  if (userDoc.photo_url) {
+    avatarEl.innerHTML = `<img src="${userDoc.photo_url}"
+      style="width:100%;height:100%;border-radius:50%;object-fit:cover"
+      onerror="this.parentElement.innerHTML='🐉'">`;
+  } else {
+    avatarEl.textContent = '🐉';
+  }
+}
+
+// ══════════════════════════════════════════
+//  🔥 DAILY CHECK-IN
+// ══════════════════════════════════════════
+function isSameDay(dateStr) {
+  if (!dateStr) return false;
+  const last = new Date(dateStr);
+  const now  = new Date();
+  return last.getFullYear() === now.getFullYear() &&
+         last.getMonth()    === now.getMonth()    &&
+         last.getDate()     === now.getDate();
+}
+
+function updateCheckinUI() {
+  const btn     = document.getElementById('checkin-btn');
+  const subtext = document.getElementById('checkin-subtext');
+  if (!userDoc) return;
+
+  if (isSameDay(userDoc.last_checkin)) {
+    btn.textContent    = '✅ Done';
+    btn.disabled       = true;
+    btn.style.opacity  = '0.5';
+    subtext.textContent = `Day ${userDoc.streak} streak · Come back tomorrow!`;
+  } else {
+    btn.textContent    = 'Check in';
+    btn.disabled       = false;
+    btn.style.opacity  = '1';
+    subtext.textContent = `Day ${(userDoc.streak || 0) + 1} · +10 Yong Points`;
+  }
+}
+
+async function doCheckin() {
+  if (!tgUser || !userDoc) return;
+  if (isSameDay(userDoc.last_checkin)) {
+    showToast('Already checked in today! Come back tomorrow 🐉');
+    return;
+  }
+
+  const btn = document.getElementById('checkin-btn');
+  btn.textContent = '…';
+  btn.disabled    = true;
+
+  try {
+    const ref     = db.collection('users').doc(String(tgUser.id));
+    const newStreak = (userDoc.streak || 0) + 1;
+    const updates  = {
+      yong_points:  (userDoc.yong_points || 0) + 10,
+      streak:       newStreak,
+      last_checkin: new Date().toISOString()
+    };
+
+    await ref.update(updates);
+    Object.assign(userDoc, updates);
+
+    renderProfile();
+    updateCheckinUI();
+    showToast(`🔥 +10 Yong Points! Day ${newStreak} streak!`);
+  } catch(e) {
+    btn.textContent = 'Check in';
+    btn.disabled    = false;
+    showToast('Check-in failed. Try again.');
+  }
+}
+
+// ── Track comics read ──
+async function trackRead(comicId) {
+  if (!tgUser || !userDoc) return;
+  try {
+    const ref = db.collection('users').doc(String(tgUser.id));
+    const newCount = (userDoc.comics_read || 0) + 1;
+    await ref.update({ comics_read: newCount });
+    userDoc.comics_read = newCount;
+    document.getElementById('stat-read').textContent = newCount;
+  } catch(e) { /* silent */ }
+}
+
+// Start everything
+initApp();
 </script>
 </body>
 </html>
