@@ -837,10 +837,10 @@ input[type=range].page-range::-webkit-slider-thumb {
 show_11003409({
   type: 'inApp',
   inAppSettings: {
-    frequency: 4,
-    capping: 0.5,
-    interval: 20,
-    timeout: 5,
+    frequency: 6,
+    capping: 1,
+    interval: 420,
+    timeout: 300,
     everyPage: false
   }
 });
@@ -963,10 +963,12 @@ show_11003409({
 
     <!-- LIBRARY VIEW -->
     <div id="library-view">
-      <div class="view-title">📚 LIBRARY</div>
-      <div class="empty-state">
-        <div class="icon">🐉</div>
-        <p>Your reading list is empty.<br>Start reading to save comics here.</p>
+      <div class="view-title" style="padding:20px 20px 0">📚 LIBRARY</div>
+      <div id="library-content">
+        <div class="empty-state">
+          <div class="icon">🐉</div>
+          <p>Your library is empty.<br>Save comics from the detail popup.</p>
+        </div>
       </div>
     </div>
 
@@ -1109,9 +1111,16 @@ show_11003409({
         <span class="detail-rating-count" id="detail-rating-count"></span>
       </div>
       <div class="detail-desc" id="detail-desc"></div>
-      <button class="btn-read-now" id="detail-read-btn" onclick="startReading()">
-        🐉 READ NOW
-      </button>
+      <div style="display:flex;gap:10px">
+        <button class="btn-read-now" id="detail-read-btn" onclick="startReading()" style="flex:1">
+          🐉 READ NOW
+        </button>
+        <button class="btn-read-now" id="detail-save-btn"
+          onclick="toggleLibrary(activeComic?.postId)"
+          style="flex:0 0 auto;padding:14px 16px;background:var(--surface-elev);box-shadow:none;border:1px solid var(--border)">
+          🔖 Save
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -1131,121 +1140,232 @@ show_11003409({
 
 <script>
 // ══════════════════════════════════════════
-//  COMICS DATA
-//  Replace blogUrl with your Blogger post URLs
-//  Replace cover with real cover image URLs
+//  CONFIG
 // ══════════════════════════════════════════
-const COMICS = [
-  {
-    id: 0,
-    title: 'IRON TIDE',
-    kr: '아이언 타이드',
-    origin: '🇳🇬 Nigeria',
-    genre: 'Action',
-    ep: 'S01E01',
-    type: 'Chapters',
-    cover: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80',
-    blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
-    rating: 4.8, ratingCount: 124,
-    desc: 'A disgraced soldier returns to Lagos to find his city overrun by a shadow army no one believes exists.',
-    pages: [
-      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=720&q=80',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=720&q=80',
-      'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?w=720&q=80',
-    ]
-  },
-  {
-    id: 1,
-    title: 'MOONLIT PROMISE',
-    kr: '달빛 약속',
-    origin: '🇰🇷 Korea',
-    genre: 'Romance',
-    ep: 'S01E01',
-    type: 'Chapters',
-    cover: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
-    blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
-    rating: 4.5, ratingCount: 89,
-    desc: 'A young pianist returns to her grandmother\'s seaside village and finds a letter that was never sent.',
-    pages: [
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=720&q=80',
-      'https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?w=720&q=80',
-    ]
-  },
-  {
-    id: 2,
-    title: 'BAMBOO LETTERS',
-    kr: '대나무 편지',
-    origin: '🇯🇵 Japan',
-    genre: 'Drama',
-    ep: 'S01E01',
-    type: 'Pages',
-    cover: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?w=400&q=80',
-    blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
-    rating: 4.2, ratingCount: 56,
-    desc: 'A retired calligrapher discovers a hidden compartment in his late wife\'s writing desk — full of unsent letters.',
-    pages: [
-      'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?w=720&q=80',
-      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=720&q=80',
-    ]
-  },
-  {
-    id: 3,
-    title: 'COSMOS ABOVE',
-    kr: '우주 위에',
-    origin: '🇺🇸 USA',
-    genre: 'Sci-Fi',
-    ep: 'S01E01',
-    type: 'Pages',
-    cover: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&q=80',
-    blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
-    rating: 4.6, ratingCount: 203,
-    desc: 'Earth\'s last signal reaches a colony ship 40 years too late. The crew must decide whether to turn back.',
-    pages: [
-      'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=720&q=80',
-      'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=720&q=80',
-    ]
-  },
-  {
-    id: 4,
-    title: 'LAGOS AT DUSK',
-    kr: '황혼의 라고스',
-    origin: '🇳🇬 Nigeria',
-    genre: 'Drama',
-    ep: 'S01E01',
-    type: 'Chapters',
-    cover: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80',
-    blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
-    rating: 4.3, ratingCount: 71,
-    desc: 'Five strangers cross paths at a Lagos bus stop. One night. One decision. Five different lives changed forever.',
-    pages: [
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=720&q=80',
-    ]
-  },
-  {
-    id: 5,
-    title: 'GHOST SIGNAL',
-    kr: '유령 신호',
-    origin: '🇬🇧 UK',
-    genre: 'Horror',
-    ep: 'S01E01',
-    type: 'Pages',
-    cover: 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?w=400&q=80',
-    blogUrl: 'https://yongcomics.blogspot.com/your-post-here',
-    rating: 4.7, ratingCount: 148,
-    desc: 'A radio operator in rural Scotland begins receiving transmissions from a frequency that doesn\'t exist.',
-    pages: [
-      'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?w=720&q=80',
-    ]
-  },
-];
+const BLOG_URL   = 'https://yongcomics.blogspot.com';
+const RSS_BASE   = `${BLOG_URL}/feeds/posts/default`;
+const MAX_POSTS  = 20;
+
+const GENRES    = ['Action','Romance','Comedy','Drama','Horror','Fantasy','Sci-Fi'];
+const COUNTRIES = ['Nigeria','Korea','Japan','USA','UK','France','China','India',
+                   'Brazil','Ghana','Egypt','Canada','Australia','Germany','Spain'];
+const FLAGS = {
+  Nigeria:'🇳🇬', Korea:'🇰🇷', Japan:'🇯🇵', USA:'🇺🇸', UK:'🇬🇧',
+  France:'🇫🇷', China:'🇨🇳', India:'🇮🇳', Brazil:'🇧🇷', Ghana:'🇬�',
+  Egypt:'🇪🇬', Canada:'🇨🇦', Australia:'🇦🇺', Germany:'🇩🇪', Spain:'🇪🇸'
+};
 
 // ══════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════
-let currentView = 'home';
-let readerPages = [];
-let readerPage  = 1;
-let currentGenre = 'All';
+let currentView   = 'home';
+let currentGenre  = 'All';
+let allComics     = [];       // parsed from RSS
+let activeComic   = null;     // currently open popup/reader
+let ratingsCache  = {};       // postId → {average, count}
+
+// ══════════════════════════════════════════
+//  RSS FETCH & PARSE
+// ══════════════════════════════════════════
+async function fetchComics(label = '') {
+  const labelPath = label ? `/-/${encodeURIComponent(label)}` : '';
+  const url = `${RSS_BASE}${labelPath}?alt=json&max-results=${MAX_POSTS}`;
+  try {
+    const res  = await fetch(url);
+    const json = await res.json();
+    const entries = json.feed?.entry || [];
+    return entries.map(parseEntry);
+  } catch(e) {
+    console.error('RSS fetch failed', e);
+    return [];
+  }
+}
+
+function parseEntry(entry) {
+  // Post ID — last part of the id string
+  const idRaw  = entry.id?.$t || '';
+  const postId = idRaw.split('-').pop() || idRaw;
+
+  // Title
+  const title = entry.title?.$t || 'Untitled';
+
+  // Labels
+  const labels   = (entry.category || []).map(c => c.term);
+  const genre    = labels.find(l => GENRES.includes(l))    || 'General';
+  const country  = labels.find(l => COUNTRIES.includes(l)) || '';
+  const flag     = country ? (FLAGS[country] || '🌍') : '🌍';
+  const origin   = country ? `${flag} ${country}` : '🌍 World';
+
+  // Cover image — first image in content
+  const content  = entry.content?.$t || entry.summary?.$t || '';
+  const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+  const cover    = imgMatch ? imgMatch[1] : '';
+
+  // Description — strip HTML tags
+  const desc = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+
+  // Post URL
+  const linkEntry = (entry.link || []).find(l => l.rel === 'alternate');
+  const blogUrl   = linkEntry?.href || '';
+
+  // Published date
+  const published = entry.published?.$t || '';
+  const ep        = published ? new Date(published).toLocaleDateString('en', { month: 'short', year: 'numeric' }) : '';
+
+  return { postId, title, genre, country, origin, cover, desc, content, blogUrl, ep, labels };
+}
+
+// Extract images from full HTML content for reader
+function extractImages(htmlContent) {
+  const matches = [...htmlContent.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)];
+  return matches.map(m => m[1]);
+}
+
+// ══════════════════════════════════════════
+//  RATINGS (Firestore)
+// ══════════════════════════════════════════
+async function fetchRatings(postIds) {
+  if (!postIds.length) return;
+  try {
+    const snaps = await Promise.all(
+      postIds.map(id => db.collection('ratings').doc(id).get())
+    );
+    snaps.forEach((snap, i) => {
+      if (snap.exists) ratingsCache[postIds[i]] = snap.data();
+    });
+  } catch(e) { /* silent */ }
+}
+
+function getRating(postId) {
+  return ratingsCache[postId] || { average: 0, count: 0 };
+}
+
+async function submitRating(postId, stars) {
+  if (!tgUser) return;
+  const uid = String(tgUser.id);
+  try {
+    const voteRef   = db.collection('ratings').doc(postId)
+                        .collection('votes').doc(uid);
+    const ratingRef = db.collection('ratings').doc(postId);
+
+    const voteSnap = await voteRef.get();
+    const batch    = db.batch();
+
+    if (voteSnap.exists) {
+      // Update existing vote
+      const oldStars = voteSnap.data().stars;
+      const current  = ratingsCache[postId] || { total_stars: 0, count: 1 };
+      const newTotal = (current.total_stars || 0) - oldStars + stars;
+      const average  = newTotal / current.count;
+      batch.update(ratingRef, { total_stars: newTotal, average, count: current.count });
+      batch.update(voteRef,   { stars });
+    } else {
+      const current  = ratingsCache[postId] || { total_stars: 0, count: 0 };
+      const newTotal = (current.total_stars || 0) + stars;
+      const newCount = (current.count || 0) + 1;
+      const average  = newTotal / newCount;
+      batch.set(ratingRef,  { total_stars: newTotal, average, count: newCount }, { merge: true });
+      batch.set(voteRef,    { stars, uid });
+    }
+
+    await batch.commit();
+    ratingsCache[postId] = { ...(ratingsCache[postId] || {}), average: getRating(postId).average };
+
+    // Refresh popup stars
+    const r = getRating(postId);
+    document.getElementById('detail-stars-row').innerHTML  = starsHTML(r.average);
+    document.getElementById('detail-rating-num').textContent   = r.average.toFixed(1);
+    document.getElementById('detail-rating-count').textContent = `(${r.count} ratings)`;
+    showToast(`⭐ Rated ${stars} stars!`);
+  } catch(e) {
+    showToast('Rating failed. Try again.');
+  }
+}
+
+// ══════════════════════════════════════════
+//  📚 LIBRARY (localStorage)
+// ══════════════════════════════════════════
+function getLibrary() {
+  return JSON.parse(localStorage.getItem('yong_library') || '{}');
+}
+
+function saveLibrary(lib) {
+  localStorage.setItem('yong_library', JSON.stringify(lib));
+}
+
+function isInLibrary(postId) {
+  return !!getLibrary()[postId];
+}
+
+function toggleLibrary(postId) {
+  const lib = getLibrary();
+  if (lib[postId]) {
+    delete lib[postId];
+    saveLibrary(lib);
+    updateSaveBtn(postId);
+    showToast('Removed from Library');
+  } else {
+    if (!activeComic) return;
+    lib[postId] = {
+      postId,
+      title:   activeComic.title,
+      cover:   activeComic.cover,
+      genre:   activeComic.genre,
+      origin:  activeComic.origin,
+      blogUrl: activeComic.blogUrl,
+      saved_at: Date.now()
+    };
+    saveLibrary(lib);
+    updateSaveBtn(postId);
+    showToast('🔖 Saved to Library!');
+  }
+  renderLibrary();
+}
+
+function updateSaveBtn(postId) {
+  const btn = document.getElementById('detail-save-btn');
+  if (!btn) return;
+  const saved = isInLibrary(postId);
+  btn.textContent  = saved ? '🔖 Saved' : '🔖 Save';
+  btn.style.background = saved ? 'var(--surface-elev)' : '';
+}
+
+function renderLibrary() {
+  const lib  = getLibrary();
+  const items = Object.values(lib).sort((a,b) => b.saved_at - a.saved_at);
+  const wrap  = document.getElementById('library-content');
+  if (!wrap) return;
+
+  if (!items.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">🐉</div>
+      <p>Your library is empty.<br>Save comics from the detail popup.</p></div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;padding:0 20px;">
+    ${items.map(c => `
+      <div class="grid-card" onclick="showPopupFromLibrary('${c.postId}')">
+        <div class="grid-card-cover">
+          <img src="${c.cover}" alt="${c.title}" loading="lazy">
+          <div class="bg-veil"></div>
+          <div class="card-origin">${c.origin}</div>
+          <div class="card-meta">
+            <div class="card-meta-title">${c.title}</div>
+            <div class="card-meta-ep">${c.genre}</div>
+          </div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function showPopupFromLibrary(postId) {
+  const lib = getLibrary();
+  const c   = lib[postId];
+  if (!c) return;
+  // Find in allComics if loaded, else build minimal object
+  const full = allComics.find(x => x.postId === postId);
+  showPopup(full || { ...c, ep: '', desc: '', content: '' });
+}
 
 // ══════════════════════════════════════════
 //  CARD RENDERING
@@ -1253,31 +1373,29 @@ let currentGenre = 'All';
 function renderCards(rowId, gridId, comics) {
   const row  = document.getElementById(rowId);
   const grid = document.getElementById(gridId);
-  row.innerHTML = '';
-  grid.innerHTML = '';
-
-  comics.forEach(c => {
-    row.insertAdjacentHTML('beforeend', cardHTML(c, 'comic-card'));
-    grid.insertAdjacentHTML('beforeend', cardHTML(c, 'grid-card', true));
-  });
+  if (row)  row.innerHTML  = comics.length ? comics.map(c => cardHTML(c, 'comic-card')).join('') : '<p style="padding:20px;color:var(--muted);font-size:13px;">No comics yet — check back soon! 🐉</p>';
+  if (grid) grid.innerHTML = comics.length ? comics.map(c => cardHTML(c, 'grid-card', true)).join('') : '';
 }
 
-function starsHTML(rating) {
+function starsHTML(rating, interactive = false, postId = '') {
   let s = '';
   for (let i = 1; i <= 5; i++) {
-    if (rating >= i)        s += '<span class="star full">★</span>';
-    else if (rating >= i-0.5) s += '<span class="star half">★</span>';
-    else                    s += '<span class="star empty">★</span>';
+    const cls = rating >= i ? 'full' : rating >= i - 0.5 ? 'half' : 'empty';
+    const click = interactive ? `onclick="submitRating('${postId}',${i})"` : '';
+    s += `<span class="star ${cls}" style="${interactive ? 'cursor:pointer;font-size:20px' : ''}" ${click}>★</span>`;
   }
   return s;
 }
 
 function cardHTML(c, cls, isGrid = false) {
   const coverCls = isGrid ? 'grid-card-cover' : 'comic-card-cover';
+  const r        = getRating(c.postId);
+  const ratingStr = r.count > 0 ? r.average.toFixed(1) : '–';
+  const starsStr  = r.count > 0 ? starsHTML(r.average) : starsHTML(0);
   return `
-  <div class="${cls}" onclick="showPopup(${c.id})">
+  <div class="${cls}" onclick="showPopup(${JSON.stringify(c).replace(/"/g,'&quot;')})">
     <div class="${coverCls}">
-      <img src="${c.cover}" alt="${c.title}" loading="lazy">
+      ${c.cover ? `<img src="${c.cover}" alt="${c.title}" loading="lazy">` : '<div style="width:100%;height:100%;background:var(--surface-elev)"></div>'}
       <div class="bg-veil"></div>
       <div class="card-origin">${c.origin}</div>
       <div class="card-meta">
@@ -1286,10 +1404,49 @@ function cardHTML(c, cls, isGrid = false) {
       </div>
     </div>
     <div class="card-stars">
-      <div class="stars">${starsHTML(c.rating)}</div>
-      <span class="rating-num">${c.rating.toFixed(1)}</span>
+      <div class="stars">${starsStr}</div>
+      <span class="rating-num">${ratingStr}</span>
     </div>
   </div>`;
+}
+
+// ══════════════════════════════════════════
+//  LOAD & DISPLAY COMICS
+// ══════════════════════════════════════════
+async function loadComics(label = '') {
+  const rowIds  = ['trending-row', 'new-row'];
+  const gridIds = ['trending-grid', 'new-grid'];
+
+  // Show loading
+  rowIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  });
+
+  const comics = await fetchComics(label);
+  allComics    = comics;
+
+  // Batch fetch ratings
+  await fetchRatings(comics.map(c => c.postId));
+
+  // Trending = all, New = reversed
+  renderCards('trending-row', 'trending-grid', comics);
+  renderCards('new-row',      'new-grid',      [...comics].reverse());
+
+  // Update hero with first comic
+  if (comics.length > 0) updateHero(comics[0]);
+}
+
+function updateHero(c) {
+  const heroImg = document.querySelector('.hero img');
+  if (heroImg && c.cover) heroImg.src = c.cover;
+  const heroTitle = document.querySelector('.hero-title');
+  if (heroTitle) heroTitle.textContent = c.title;
+  const heroDesc = document.querySelector('.hero-desc');
+  if (heroDesc) heroDesc.textContent = c.desc;
+  const heroSub = document.querySelector('.hero-sub');
+  if (heroSub) heroSub.textContent = `${c.origin} · ${c.ep} · ${c.genre}`;
+  document.querySelector('.hero').onclick = () => showPopup(c);
 }
 
 // ══════════════════════════════════════════
@@ -1302,40 +1459,47 @@ function showView(view) {
   document.getElementById('library-view').classList.toggle('active', view === 'library');
   document.getElementById('profile-view').classList.toggle('active', view === 'profile');
 
-  // Update bottom nav
   ['home','search','library','profile'].forEach(v => {
     const el = document.getElementById(`nav-${v}`);
     if (el) el.classList.toggle('active', v === view);
   });
 
-  // Update desktop nav
   document.querySelectorAll('.header-nav a').forEach((a, i) => {
     a.classList.toggle('active', i === ['home','search','library','profile'].indexOf(view));
   });
 
+  if (view === 'library') renderLibrary();
   currentView = view;
 }
 
 // ══════════════════════════════════════════
 //  DETAIL POPUP
 // ══════════════════════════════════════════
-let activeComicId = null;
+function showPopup(c) {
+  // c can be object or JSON string from onclick attr
+  if (typeof c === 'string') c = JSON.parse(c);
+  activeComic = c;
 
-function showPopup(id) {
-  const c = COMICS.find(x => x.id === id);
-  if (!c) return;
-  activeComicId = id;
+  const r = getRating(c.postId);
 
-  document.getElementById('detail-img').src          = c.cover;
-  document.getElementById('detail-img').alt          = c.title;
+  document.getElementById('detail-img').src    = c.cover || '';
+  document.getElementById('detail-img').alt    = c.title;
   document.getElementById('detail-origin').textContent = c.origin;
   document.getElementById('detail-genre').textContent  = c.genre;
   document.getElementById('detail-title').textContent  = c.title;
-  document.getElementById('detail-kr').textContent     = `${c.kr} · ${c.ep}`;
+  document.getElementById('detail-kr').textContent     = c.ep || '';
   document.getElementById('detail-desc').textContent   = c.desc;
-  document.getElementById('detail-stars-row').innerHTML = starsHTML(c.rating);
-  document.getElementById('detail-rating-num').textContent   = c.rating.toFixed(1);
-  document.getElementById('detail-rating-count').textContent = `(${c.ratingCount} ratings)`;
+
+  // Interactive stars for rating
+  document.getElementById('detail-stars-row').innerHTML =
+    starsHTML(r.average, true, c.postId);
+  document.getElementById('detail-rating-num').textContent   =
+    r.count > 0 ? r.average.toFixed(1) : 'Rate it';
+  document.getElementById('detail-rating-count').textContent =
+    r.count > 0 ? `(${r.count} ratings)` : '';
+
+  // Save button state
+  updateSaveBtn(c.postId);
 
   document.getElementById('detail-popup').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1344,7 +1508,7 @@ function showPopup(id) {
 function closePopup() {
   document.getElementById('detail-popup').classList.remove('open');
   document.body.style.overflow = '';
-  activeComicId = null;
+  activeComic = null;
 }
 
 function handlePopupBackdrop(e) {
@@ -1352,84 +1516,75 @@ function handlePopupBackdrop(e) {
 }
 
 function startReading() {
-  const id = activeComicId;
+  const c = activeComic;
   closePopup();
-  openComic(id);
-  trackRead(id);
+  openComic(c);
+  trackRead(c?.postId);
 }
 
 // ══════════════════════════════════════════
-//  READER
+//  READER — renders full RSS HTML content
 // ══════════════════════════════════════════
-function openComic(id) {
-  const comic = COMICS.find(c => c.id === id);
-  if (!comic) return;
+function openComic(c) {
+  if (!c) return;
 
-  // If your Blogger posts have the actual comic images, open the URL
-  // For now we use the demo pages array
-  readerPages = comic.pages;
-  readerPage  = 1;
+  document.getElementById('reader-title').textContent = c.title;
+  document.getElementById('reader-ep').textContent    = `${c.origin} · ${c.ep} · ${c.genre}`;
 
-  document.getElementById('reader-title').textContent = comic.title;
-  document.getElementById('reader-ep').textContent    = `${comic.kr} · ${comic.ep} · ${comic.genre}`;
-
-  const range = document.getElementById('reader-range');
-  range.max   = readerPages.length;
-  range.value = 1;
-
-  renderReaderPage();
-  document.getElementById('reader').classList.add('open');
-}
-
-function renderReaderPage() {
   const body = document.getElementById('reader-body');
-  body.innerHTML = '';
+  body.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  document.getElementById('reader').classList.add('open');
 
-  // Render all pages stacked (vertical scroll comic style)
-  const wrap = document.createElement('div');
-  wrap.className = 'reader-page-wrap';
-  readerPages.forEach(src => {
-    const img = document.createElement('img');
-    img.src = src;
-    img.loading = 'lazy';
-    wrap.appendChild(img);
-  });
-  body.appendChild(wrap);
+  // Extract images from RSS content for vertical scroll reader
+  const images = extractImages(c.content || '');
 
-  updateReaderInfo();
+  if (images.length > 0) {
+    // Image-based comic — render images vertically
+    const range = document.getElementById('reader-range');
+    range.max   = images.length;
+    range.value = 1;
+    document.getElementById('reader-pages').textContent = `1 / ${images.length}`;
 
-  // Track scroll
-  body.onscroll = () => {
-    const scrollPct = body.scrollTop / (body.scrollHeight - body.clientHeight);
-    readerPage = Math.max(1, Math.round(scrollPct * (readerPages.length - 1)) + 1);
-    document.getElementById('reader-range').value = readerPage;
-    updateReaderInfo();
-  };
-}
+    body.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'reader-page-wrap';
+    images.forEach(src => {
+      const img = document.createElement('img');
+      img.src     = src;
+      img.loading = 'lazy';
+      wrap.appendChild(img);
+    });
+    body.appendChild(wrap);
 
-function updateReaderInfo() {
-  document.getElementById('reader-pages').textContent = `${readerPage} / ${readerPages.length}`;
+    // Scroll tracking
+    body.onscroll = () => {
+      const pct  = body.scrollTop / Math.max(1, body.scrollHeight - body.clientHeight);
+      const page = Math.max(1, Math.round(pct * (images.length - 1)) + 1);
+      document.getElementById('reader-range').value = page;
+      document.getElementById('reader-pages').textContent = `${page} / ${images.length}`;
+    };
+  } else {
+    // Text/story post — render full HTML
+    document.getElementById('reader-range').max   = 1;
+    document.getElementById('reader-range').value = 1;
+    document.getElementById('reader-pages').textContent = '';
+    body.innerHTML = `<div style="padding:20px;color:var(--fg);font-size:14px;line-height:1.8;max-width:680px;margin:0 auto">${c.content}</div>`;
+  }
 }
 
 function readerJump(val) {
-  readerPage = parseInt(val);
-  updateReaderInfo();
+  document.getElementById('reader-pages').textContent =
+    `${val} / ${document.getElementById('reader-range').max}`;
 }
 
 function readerPrev() {
-  if (readerPage > 1) {
-    readerPage--;
-    document.getElementById('reader-range').value = readerPage;
-    updateReaderInfo();
-  }
+  const r = document.getElementById('reader-range');
+  if (parseInt(r.value) > 1) { r.value--; readerJump(r.value); }
 }
 
 function readerNext() {
-  if (readerPage < readerPages.length) {
-    readerPage++;
-    document.getElementById('reader-range').value = readerPage;
-    updateReaderInfo();
-  }
+  const r = document.getElementById('reader-range');
+  if (parseInt(r.value) < parseInt(r.max)) { r.value++; readerJump(r.value); }
 }
 
 function closeReader() {
@@ -1462,7 +1617,7 @@ function doSearch(q) {
     return;
   }
 
-  const found = COMICS.filter(c =>
+  const found = allComics.filter(c =>
     c.title.toLowerCase().includes(q) ||
     c.genre.toLowerCase().includes(q) ||
     c.origin.toLowerCase().includes(q) ||
@@ -1474,29 +1629,19 @@ function doSearch(q) {
     return;
   }
 
-  results.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;">
+  results.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;padding:0 20px;">
     ${found.map(c => cardHTML(c, 'grid-card', true)).join('')}
   </div>`;
 }
 
 // ══════════════════════════════════════════
-//  GENRE FILTER
+//  GENRE FILTER — RSS label based
 // ══════════════════════════════════════════
-function filterGenre(btn, genre) {
+async function filterGenre(btn, genre) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentGenre = genre;
-
-  const filtered = genre === 'All' ? COMICS : COMICS.filter(c => c.genre === genre);
-  renderCards('trending-row', 'trending-grid', filtered);
-  renderCards('new-row', 'new-grid', [...filtered].reverse());
-
-  if (!filtered.length) {
-    document.getElementById('trending-row').innerHTML = `<p style="padding:20px;color:var(--muted);font-size:13px;">No ${genre} comics yet — check back soon! 🐉</p>`;
-    document.getElementById('trending-grid').innerHTML = document.getElementById('trending-row').innerHTML;
-    document.getElementById('new-row').innerHTML = '';
-    document.getElementById('new-grid').innerHTML = '';
-  }
+  await loadComics(genre === 'All' ? '' : genre);
 }
 
 // ══════════════════════════════════════════
@@ -1541,8 +1686,7 @@ async function initApp() {
   updateCheckinUI();
   updateWatchAdsUI();
   updateShieldUI();
-  renderCards('trending-row', 'trending-grid', COMICS);
-  renderCards('new-row', 'new-grid', [...COMICS].reverse());
+  await loadComics(); // fetch from Blogger RSS
 }
 
 // ══════════════════════════════════════════
@@ -1893,8 +2037,8 @@ function renderProfile() {
 }
 
 // ── Track comics read ──
-async function trackRead(comicId) {
-  if (!tgUser || !userDoc) return;
+async function trackRead(postId) {
+  if (!tgUser || !userDoc || !postId) return;
   try {
     const newCount = (userDoc.comics_read || 0) + 1;
     await saveToFirestore({ comics_read: newCount });
