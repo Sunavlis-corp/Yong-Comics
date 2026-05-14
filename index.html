@@ -732,7 +732,95 @@ input[type=range].page-range::-webkit-slider-thumb {
 .stat-value { font-family: var(--font-title); font-size: 22px; color: var(--fg); }
 .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
-/* ── ANIMATIONS ── */
+/* ── PROFILE SECTION CARDS ── */
+.profile-section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin: 12px 20px 0;
+}
+.profile-section-title {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.profile-section-sub {
+  font-size: 12px; color: var(--muted);
+  margin-bottom: 12px;
+}
+.btn-profile-action {
+  width: 100%; padding: 12px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), #b5001f);
+  color: #fff;
+  box-shadow: var(--glow);
+  transition: opacity 0.2s, transform 0.15s;
+  border: none; cursor: pointer;
+}
+.btn-profile-action:hover  { opacity: 0.9; }
+.btn-profile-action:active { transform: scale(0.98); }
+.btn-profile-action:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-shield {
+  background: linear-gradient(135deg, #3a86ff, #0043a8);
+  box-shadow: 0 0 20px rgba(58,134,255,0.4);
+}
+
+.wallet-input {
+  width: 100%;
+  background: var(--surface-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--fg);
+  outline: none;
+}
+.wallet-input:focus { border-color: var(--primary); }
+
+/* ── REWARD POPUP ── */
+#reward-popup {
+  position: fixed; inset: 0; z-index: 400;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  padding: 24px;
+}
+#reward-popup.open { display: flex; }
+
+.reward-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 320px; width: 100%;
+  animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.reward-icon { font-size: 52px; margin-bottom: 12px; }
+.reward-title {
+  font-family: var(--font-title);
+  font-size: 22px; letter-spacing: 2px;
+  margin-bottom: 8px; color: var(--gold);
+}
+.reward-msg {
+  font-size: 13px; color: var(--muted);
+  line-height: 1.6; margin-bottom: 20px;
+}
+.btn-reward-close {
+  padding: 10px 28px; border-radius: 999px;
+  background: var(--primary);
+  color: #fff; font-weight: 700; font-size: 13px;
+  border: none; cursor: pointer;
+  box-shadow: var(--glow);
+}
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .fade-in { animation: fadeIn 0.4s ease forwards; }
 
@@ -742,8 +830,21 @@ input[type=range].page-range::-webkit-slider-thumb {
 .stagger-4 { animation-delay: 0.2s;  opacity: 0; }
 .stagger-5 { animation-delay: 0.25s; opacity: 0; }
 </style>
+<script src='//libtl.com/sdk.js' data-zone='11003409' data-sdk='show_11003409'></script>
 </head>
 <body>
+<script>
+show_11003409({
+  type: 'inApp',
+  inAppSettings: {
+    frequency: 4,
+    capping: 0.5,
+    interval: 20,
+    timeout: 5,
+    everyPage: false
+  }
+});
+</script>
 <div id="app">
 
   <!-- HEADER -->
@@ -892,7 +993,39 @@ input[type=range].page-range::-webkit-slider-thumb {
           </div>
         </div>
       </div>
-      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px;">
+
+      <!-- Watch Ads for Points -->
+      <div class="profile-section-card">
+        <div class="profile-section-title">🎬 Watch Ads for Points</div>
+        <p class="profile-section-sub" id="watch-ads-subtext">Watch up to 3 ads per day · 5 points each</p>
+        <button class="btn-profile-action" id="watch-ads-btn" onclick="doWatchAd()">
+          ▶ Watch Ad · +5 Points
+        </button>
+      </div>
+
+      <!-- Streak Shield -->
+      <div class="profile-section-card" id="streak-shield-card" style="display:none">
+        <div class="profile-section-title">🛡️ Streak Shield</div>
+        <p class="profile-section-sub" id="shield-subtext">Watch 5 ads to restore your lost streak</p>
+        <button class="btn-profile-action btn-shield" id="shield-btn" onclick="doStreakShield()">
+          🛡️ Restore Streak
+        </button>
+      </div>
+
+      <!-- Solana Wallet -->
+      <div class="profile-section-card">
+        <div class="profile-section-title">◎ Solana Wallet</div>
+        <p class="profile-section-sub">Required for Yong Solana rewards</p>
+        <input type="text" class="wallet-input" id="wallet-input"
+          placeholder="Enter your Solana wallet address"
+          oninput="document.getElementById('save-wallet-btn').style.display='block'">
+        <button class="btn-profile-action" id="save-wallet-btn"
+          style="display:none;margin-top:10px" onclick="saveWallet()">
+          Save Wallet
+        </button>
+      </div>
+
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px;padding-bottom:8px;">
         용 코믹스 · Yong Comics · © 2026<br>
         Every genre. No limits. 🐉
       </p>
@@ -980,6 +1113,16 @@ input[type=range].page-range::-webkit-slider-thumb {
         🐉 READ NOW
       </button>
     </div>
+  </div>
+</div>
+
+<!-- REWARD POPUP -->
+<div id="reward-popup">
+  <div class="reward-sheet">
+    <div class="reward-icon" id="reward-icon">🐉</div>
+    <div class="reward-title" id="reward-title">REWARD</div>
+    <div class="reward-msg" id="reward-msg"></div>
+    <button class="btn-reward-close" onclick="closeRewardPopup()">Awesome!</button>
   </div>
 </div>
 
@@ -1383,79 +1526,361 @@ const db = firebase.firestore();
 // ══════════════════════════════════════════
 //  🐉 TELEGRAM + USER INIT
 // ══════════════════════════════════════════
-const tg   = window.Telegram?.WebApp;
-let tgUser = null;
-let userDoc = null; // live Firestore data
+const tg    = window.Telegram?.WebApp;
+let tgUser  = null;
+let userDoc = null;
 
 async function initApp() {
-  // Tell Telegram the app is ready and go fullscreen
-  if (tg) {
-    tg.ready();
-    tg.expand();
-    tgUser = tg.initDataUnsafe?.user || null;
-  }
-
-  // Fallback for testing outside Telegram
+  if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe?.user || null; }
   if (!tgUser) {
-    tgUser = {
-      id: 'test_user_001',
-      first_name: 'Dragon',
-      last_name: 'Reader',
-      username: 'yongreader',
-      photo_url: null
-    };
+    tgUser = { id: 'test_user_001', first_name: 'Dragon',
+               last_name: 'Reader', username: 'yongreader', photo_url: null };
   }
-
   await loadOrCreateUser(tgUser);
   renderProfile();
   updateCheckinUI();
-
-  // Render comics
+  updateWatchAdsUI();
+  updateShieldUI();
   renderCards('trending-row', 'trending-grid', COMICS);
   renderCards('new-row', 'new-grid', [...COMICS].reverse());
 }
 
-// ── Get or create Firestore user doc ──
+// ══════════════════════════════════════════
+//  FIRESTORE USER
+// ══════════════════════════════════════════
 async function loadOrCreateUser(u) {
-  const ref = db.collection('users').doc(String(u.id));
+  const ref  = db.collection('users').doc(String(u.id));
   const snap = await ref.get();
-
   if (snap.exists) {
     userDoc = snap.data();
   } else {
-    const now = new Date().toISOString();
     userDoc = {
-      telegram_id:  String(u.id),
-      first_name:   u.first_name || 'Dragon',
-      last_name:    u.last_name  || '',
-      username:     u.username   || '',
-      photo_url:    u.photo_url  || '',
-      yong_points:  0,
-      streak:       0,
-      comics_read:  0,
-      comics_saved: 0,
-      last_checkin: null,
-      joined:       now
+      telegram_id:   String(u.id),
+      first_name:    u.first_name  || 'Dragon',
+      last_name:     u.last_name   || '',
+      username:      u.username    || '',
+      photo_url:     u.photo_url   || '',
+      yong_points:   0,
+      streak:        0,
+      comics_read:   0,
+      comics_saved:  0,
+      last_checkin:  null,
+      checkin_ads_watched: 0,   // ads watched toward today's check-in (reset midnight UTC)
+      watch_ads_today: 0,       // bonus watch ads today (reset midnight UTC)
+      watch_ads_date: null,     // UTC date string for watch ads reset
+      checkin_ads_date: null,   // UTC date string for checkin ads reset
+      shield_ads_watched: 0,    // progress toward streak shield (5 ads)
+      solana_wallet: '',
+      joined:        new Date().toISOString()
     };
     await ref.set(userDoc);
   }
 }
 
-// ── Render profile page from userDoc ──
-function renderProfile() {
+async function saveToFirestore(updates) {
+  const ref = db.collection('users').doc(String(tgUser.id));
+  await ref.update(updates);
+  Object.assign(userDoc, updates);
+}
+
+// ══════════════════════════════════════════
+//  ⏰ MIDNIGHT UTC HELPERS
+// ══════════════════════════════════════════
+function utcDateStr() {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
+}
+
+function isCheckedInToday() {
+  if (!userDoc?.last_checkin) return false;
+  const last = new Date(userDoc.last_checkin);
+  const now  = new Date();
+  return last.getUTCFullYear() === now.getUTCFullYear() &&
+         last.getUTCMonth()    === now.getUTCMonth()    &&
+         last.getUTCDate()     === now.getUTCDate();
+}
+
+function missedDays() {
+  if (!userDoc?.last_checkin) return 0;
+  const last = new Date(userDoc.last_checkin);
+  const now  = new Date();
+  // Difference in UTC days
+  const lastMidnight = Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate());
+  const nowMidnight  = Date.UTC(now.getUTCFullYear(),  now.getUTCMonth(),  now.getUTCDate());
+  return Math.floor((nowMidnight - lastMidnight) / 86400000) - 1;
+}
+
+// ══════════════════════════════════════════
+//  🔥 DAILY CHECK-IN (3 ads → 1 point)
+// ══════════════════════════════════════════
+function updateCheckinUI() {
+  const btn     = document.getElementById('checkin-btn');
+  const subtext = document.getElementById('checkin-subtext');
   if (!userDoc) return;
 
-  const name = [userDoc.first_name, userDoc.last_name].filter(Boolean).join(' ');
-  document.getElementById('profile-name').textContent    = name || 'Dragon Reader';
-  document.getElementById('profile-handle').textContent  =
-    userDoc.username ? `@${userDoc.username}` : 'Yong Reader';
-  document.getElementById('stat-points').textContent     = userDoc.yong_points || 0;
-  document.getElementById('stat-read').textContent       = userDoc.comics_read  || 0;
-  document.getElementById('stat-saved').textContent      = userDoc.comics_saved || 0;
-  document.getElementById('profile-streak').textContent  =
-    `🔥 Day ${userDoc.streak || 1} Streak`;
+  const today      = utcDateStr();
+  const adsToday   = userDoc.checkin_ads_date === today ? (userDoc.checkin_ads_watched || 0) : 0;
+  const alreadyIn  = isCheckedInToday();
 
-  // Avatar — photo or emoji
+  if (alreadyIn) {
+    btn.textContent   = '✅ Done';
+    btn.disabled      = true;
+    btn.style.opacity = '0.5';
+    subtext.textContent = `Day ${userDoc.streak} streak · Come back tomorrow!`;
+  } else {
+    const remaining = 3 - adsToday;
+    btn.textContent   = `Watch Ad (${adsToday}/3)`;
+    btn.disabled      = false;
+    btn.style.opacity = '1';
+    subtext.textContent = remaining > 0
+      ? `Watch ${remaining} more ad${remaining > 1 ? 's' : ''} to check in · +1 Point`
+      : 'Completing check-in…';
+  }
+}
+
+async function doCheckin() {
+  if (!tgUser || !userDoc) return;
+  if (isCheckedInToday()) {
+    showToast('Already checked in today! 🐉');
+    return;
+  }
+
+  const btn  = document.getElementById('checkin-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Ad loading…';
+
+  try {
+    await show_11003409();
+  } catch(e) {
+    btn.disabled = false;
+    updateCheckinUI();
+    showToast('Ad failed. Try again.');
+    return;
+  }
+
+  // Ad watched — increment counter
+  const today    = utcDateStr();
+  const adsToday = userDoc.checkin_ads_date === today ? (userDoc.checkin_ads_watched || 0) : 0;
+  const newCount = adsToday + 1;
+
+  const updates = {
+    checkin_ads_watched: newCount,
+    checkin_ads_date:    today
+  };
+
+  if (newCount >= 3) {
+    // All 3 ads done — award check-in
+    const missed    = missedDays();
+    const newStreak = missed >= 1 ? 1 : (userDoc.streak || 0) + 1;
+    updates.streak        = newStreak;
+    updates.yong_points   = (userDoc.yong_points || 0) + 1;
+    updates.last_checkin  = new Date().toISOString();
+    updates.checkin_ads_watched = 0; // reset for tomorrow
+
+    await saveToFirestore(updates);
+    renderProfile();
+    updateCheckinUI();
+    updateShieldUI();
+
+    // 30-day streak reward
+    if (newStreak === 30) {
+      showRewardPopup(
+        '🐉',
+        'YONG SOLANA REWARD',
+        'Yong Solana Reward Processing.\nRewards Will Be Distributed Soon.\n\nMake sure your Solana wallet is saved in your profile.'
+      );
+    } else {
+      showToast(`🔥 Check-in complete! Day ${newStreak} streak · +1 Point`);
+    }
+  } else {
+    await saveToFirestore(updates);
+    updateCheckinUI();
+    showToast(`Ad ${newCount}/3 watched. ${3 - newCount} more to check in!`);
+  }
+}
+
+// ══════════════════════════════════════════
+//  🎬 WATCH ADS FOR POINTS (5pts each, max 3/day)
+// ══════════════════════════════════════════
+function updateWatchAdsUI() {
+  const btn     = document.getElementById('watch-ads-btn');
+  const subtext = document.getElementById('watch-ads-subtext');
+  if (!userDoc || !btn) return;
+
+  const today    = utcDateStr();
+  const watched  = userDoc.watch_ads_date === today ? (userDoc.watch_ads_today || 0) : 0;
+  const remaining = 3 - watched;
+
+  if (remaining <= 0) {
+    btn.textContent   = '✅ Limit reached · Come back tomorrow';
+    btn.disabled      = true;
+    btn.style.opacity = '0.5';
+    subtext.textContent = 'Daily limit: 3 ads · Resets midnight UTC';
+  } else {
+    btn.textContent   = `▶ Watch Ad · +5 Points`;
+    btn.disabled      = false;
+    btn.style.opacity = '1';
+    subtext.textContent = `${watched}/3 watched today · 5 points each · Resets midnight UTC`;
+  }
+}
+
+async function doWatchAd() {
+  if (!tgUser || !userDoc) return;
+
+  const today   = utcDateStr();
+  const watched = userDoc.watch_ads_date === today ? (userDoc.watch_ads_today || 0) : 0;
+
+  if (watched >= 3) {
+    showToast('Daily limit reached. Come back tomorrow! 🐉');
+    return;
+  }
+
+  const btn = document.getElementById('watch-ads-btn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Ad loading…';
+
+  try {
+    await show_11003409('pop');
+  } catch(e) {
+    btn.disabled = false;
+    updateWatchAdsUI();
+    showToast('Ad failed or closed early. Try again.');
+    return;
+  }
+
+  const newWatched = watched + 1;
+  const updates = {
+    yong_points:    (userDoc.yong_points || 0) + 5,
+    watch_ads_today: newWatched,
+    watch_ads_date:  today
+  };
+
+  await saveToFirestore(updates);
+  renderProfile();
+  updateWatchAdsUI();
+  showToast(`🪙 +5 Yong Points! (${newWatched}/3 today)`);
+}
+
+// ══════════════════════════════════════════
+//  🛡️ STREAK SHIELD (5 ads to restore)
+// ══════════════════════════════════════════
+function updateShieldUI() {
+  const card = document.getElementById('streak-shield-card');
+  const btn  = document.getElementById('shield-btn');
+  const sub  = document.getElementById('shield-subtext');
+  if (!card || !userDoc) return;
+
+  const missed = missedDays();
+
+  if (missed >= 1 && missed <= 7 && !isCheckedInToday()) {
+    card.style.display = 'block';
+    const progress = userDoc.shield_ads_watched || 0;
+    const remaining = 5 - progress;
+    sub.textContent  = `Missed ${missed} day${missed > 1 ? 's' : ''} · Watch ${remaining} more ad${remaining !== 1 ? 's' : ''} to restore streak`;
+    btn.textContent  = `🛡️ Restore Streak (${progress}/5)`;
+    btn.disabled     = progress >= 5;
+  } else {
+    card.style.display = 'none';
+    // Reset shield progress if streak is broken beyond 7 days
+    if (missed > 7 && (userDoc.shield_ads_watched || 0) > 0) {
+      saveToFirestore({ shield_ads_watched: 0, streak: 0 });
+    }
+  }
+}
+
+async function doStreakShield() {
+  if (!tgUser || !userDoc) return;
+
+  const progress = userDoc.shield_ads_watched || 0;
+  if (progress >= 5) return;
+
+  const btn = document.getElementById('shield-btn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Ad loading…';
+
+  try {
+    await show_11003409('pop');
+  } catch(e) {
+    updateShieldUI();
+    showToast('Ad failed. Try again.');
+    return;
+  }
+
+  const newProgress = progress + 1;
+  const updates = { shield_ads_watched: newProgress };
+
+  if (newProgress >= 5) {
+    // Restore streak — keep old streak value
+    updates.shield_ads_watched = 0;
+    updates.last_checkin = new Date().toISOString(); // mark today as checked in
+    // Don't increment streak — just restore continuity
+    await saveToFirestore(updates);
+    renderProfile();
+    updateShieldUI();
+    updateCheckinUI();
+    showRewardPopup('🛡️', 'STREAK RESTORED!',
+      `Your ${userDoc.streak}-day streak has been saved by the Dragon Shield! Keep going!`);
+  } else {
+    await saveToFirestore(updates);
+    updateShieldUI();
+    showToast(`Shield ad ${newProgress}/5 watched. ${5 - newProgress} more to go!`);
+  }
+}
+
+// ══════════════════════════════════════════
+//  ◎ SOLANA WALLET
+// ══════════════════════════════════════════
+function renderWalletInput() {
+  const input = document.getElementById('wallet-input');
+  if (input && userDoc?.solana_wallet) {
+    input.value = userDoc.solana_wallet;
+  }
+}
+
+async function saveWallet() {
+  const input = document.getElementById('wallet-input');
+  const wallet = input?.value?.trim();
+  if (!wallet) { showToast('Please enter a wallet address'); return; }
+  if (wallet.length < 32) { showToast('Invalid Solana address'); return; }
+
+  try {
+    await saveToFirestore({ solana_wallet: wallet });
+    document.getElementById('save-wallet-btn').style.display = 'none';
+    showToast('✅ Wallet saved!');
+  } catch(e) {
+    showToast('Failed to save wallet. Try again.');
+  }
+}
+
+// ══════════════════════════════════════════
+//  🎉 REWARD POPUP
+// ══════════════════════════════════════════
+function showRewardPopup(icon, title, msg) {
+  document.getElementById('reward-icon').textContent  = icon;
+  document.getElementById('reward-title').textContent = title;
+  document.getElementById('reward-msg').textContent   = msg;
+  document.getElementById('reward-popup').classList.add('open');
+}
+
+function closeRewardPopup() {
+  document.getElementById('reward-popup').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+//  RENDER PROFILE
+// ══════════════════════════════════════════
+function renderProfile() {
+  if (!userDoc) return;
+  const name = [userDoc.first_name, userDoc.last_name].filter(Boolean).join(' ');
+  document.getElementById('profile-name').textContent   = name || 'Dragon Reader';
+  document.getElementById('profile-handle').textContent =
+    userDoc.username ? `@${userDoc.username}` : 'Yong Reader';
+  document.getElementById('stat-points').textContent    = userDoc.yong_points  || 0;
+  document.getElementById('stat-read').textContent      = userDoc.comics_read  || 0;
+  document.getElementById('stat-saved').textContent     = userDoc.comics_saved || 0;
+  document.getElementById('profile-streak').textContent =
+    `🔥 Day ${userDoc.streak || 0} Streak`;
+
   const avatarEl = document.getElementById('profile-avatar');
   if (userDoc.photo_url) {
     avatarEl.innerHTML = `<img src="${userDoc.photo_url}"
@@ -1464,79 +1889,15 @@ function renderProfile() {
   } else {
     avatarEl.textContent = '🐉';
   }
-}
-
-// ══════════════════════════════════════════
-//  🔥 DAILY CHECK-IN
-// ══════════════════════════════════════════
-function isSameDay(dateStr) {
-  if (!dateStr) return false;
-  const last = new Date(dateStr);
-  const now  = new Date();
-  return last.getFullYear() === now.getFullYear() &&
-         last.getMonth()    === now.getMonth()    &&
-         last.getDate()     === now.getDate();
-}
-
-function updateCheckinUI() {
-  const btn     = document.getElementById('checkin-btn');
-  const subtext = document.getElementById('checkin-subtext');
-  if (!userDoc) return;
-
-  if (isSameDay(userDoc.last_checkin)) {
-    btn.textContent    = '✅ Done';
-    btn.disabled       = true;
-    btn.style.opacity  = '0.5';
-    subtext.textContent = `Day ${userDoc.streak} streak · Come back tomorrow!`;
-  } else {
-    btn.textContent    = 'Check in';
-    btn.disabled       = false;
-    btn.style.opacity  = '1';
-    subtext.textContent = `Day ${(userDoc.streak || 0) + 1} · +10 Yong Points`;
-  }
-}
-
-async function doCheckin() {
-  if (!tgUser || !userDoc) return;
-  if (isSameDay(userDoc.last_checkin)) {
-    showToast('Already checked in today! Come back tomorrow 🐉');
-    return;
-  }
-
-  const btn = document.getElementById('checkin-btn');
-  btn.textContent = '…';
-  btn.disabled    = true;
-
-  try {
-    const ref     = db.collection('users').doc(String(tgUser.id));
-    const newStreak = (userDoc.streak || 0) + 1;
-    const updates  = {
-      yong_points:  (userDoc.yong_points || 0) + 10,
-      streak:       newStreak,
-      last_checkin: new Date().toISOString()
-    };
-
-    await ref.update(updates);
-    Object.assign(userDoc, updates);
-
-    renderProfile();
-    updateCheckinUI();
-    showToast(`🔥 +10 Yong Points! Day ${newStreak} streak!`);
-  } catch(e) {
-    btn.textContent = 'Check in';
-    btn.disabled    = false;
-    showToast('Check-in failed. Try again.');
-  }
+  renderWalletInput();
 }
 
 // ── Track comics read ──
 async function trackRead(comicId) {
   if (!tgUser || !userDoc) return;
   try {
-    const ref = db.collection('users').doc(String(tgUser.id));
     const newCount = (userDoc.comics_read || 0) + 1;
-    await ref.update({ comics_read: newCount });
-    userDoc.comics_read = newCount;
+    await saveToFirestore({ comics_read: newCount });
     document.getElementById('stat-read').textContent = newCount;
   } catch(e) { /* silent */ }
 }
