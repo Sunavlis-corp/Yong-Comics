@@ -1,0 +1,3052 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>용 코믹스 · Yong Comics</title>
+<meta name="description" content="The dragon doesn't ask where you're from. It just breathes fire. Every genre. No limits.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+/* ── RESET & TOKENS ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0a0a0c;
+  --surface:      #13131a;
+  --surface-elev: #1c1c26;
+  --border:       rgba(255,255,255,0.08);
+  --fg:           #f0eee8;
+  --muted:        rgba(240,238,232,0.45);
+  --primary:      #e63946;
+  --primary-dim:  rgba(230,57,70,0.15);
+  --gold:         #ffd166;
+  --glow:         0 0 20px rgba(230,57,70,0.4);
+  --card-shadow:  0 4px 24px rgba(0,0,0,0.5);
+  --radius-sm:    10px;
+  --radius-md:    16px;
+  --radius-lg:    20px;
+  --font-display: 'Noto Serif KR', serif;
+  --font-body:    'Noto Sans KR', sans-serif;
+  --font-title:   'Bebas Neue', cursive;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+img { display: block; }
+
+/* scrollbar hide */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ── GRADIENTS ── */
+.bg-veil        { background: linear-gradient(to top, rgba(10,10,12,0.95) 0%, rgba(10,10,12,0.3) 60%, transparent 100%); }
+.bg-veil-top    { background: linear-gradient(to bottom, rgba(10,10,12,0.6) 0%, transparent 40%); }
+.bg-gradient-hero { background: linear-gradient(135deg, var(--primary) 0%, #b5001f 100%); }
+
+/* ── LAYOUT ── */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── HEADER ── */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,10,12,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.header-logo {
+  font-family: var(--font-title);
+  font-size: 26px;
+  letter-spacing: 3px;
+  color: var(--fg);
+  display: flex; align-items: center; gap: 8px;
+}
+.header-logo span.kr {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  letter-spacing: 1px;
+}
+
+.header-nav { display: none; }
+@media (min-width: 768px) {
+  .header-nav {
+    display: flex; gap: 4px;
+  }
+  .header-nav a {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 500;
+    color: var(--muted);
+    transition: color 0.2s, background 0.2s;
+  }
+  .header-nav a:hover, .header-nav a.active { color: var(--fg); background: var(--surface); }
+  .header-nav a.active { color: var(--primary); }
+}
+
+.header-actions { display: flex; gap: 8px; align-items: center; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  transition: color 0.2s, background 0.2s;
+}
+.icon-btn:hover { color: var(--fg); background: var(--surface-elev); }
+
+/* ── MAIN ── */
+main { flex: 1; padding-bottom: 80px; }
+@media (min-width: 768px) { main { padding-bottom: 40px; } }
+
+.container { max-width: 960px; margin: 0 auto; }
+
+/* ── MOBILE TITLE ── */
+.mobile-title {
+  padding: 16px 20px 8px;
+}
+.mobile-title .label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+.mobile-title h1 {
+  font-family: var(--font-title);
+  font-size: 36px;
+  letter-spacing: 3px;
+  line-height: 1;
+}
+.mobile-title p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+@media (min-width: 768px) { .mobile-title { display: none; } }
+
+/* ── CHECKIN BANNER ── */
+.checkin-banner {
+  margin: 12px 20px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+@media (min-width: 768px) { .checkin-banner { margin: 16px 24px; } }
+
+.checkin-info { display: flex; align-items: center; gap: 10px; }
+.checkin-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--primary-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.checkin-text p:first-child { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+.checkin-text p:last-child { font-size: 11px; color: var(--muted); }
+
+.btn-checkin {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, var(--primary), #b5001f);
+  color: #fff;
+  box-shadow: var(--glow);
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-checkin:hover { opacity: 0.9; transform: scale(1.03); }
+.btn-checkin:active { transform: scale(0.97); }
+
+/* ── GENRE FILTERS ── */
+.filters {
+  display: flex; gap: 8px;
+  overflow-x: auto; padding: 0 20px 4px;
+  margin-top: 8px;
+}
+.filters::-webkit-scrollbar { display: none; }
+@media (min-width: 768px) { .filters { padding: 0 24px 4px; } }
+
+.filter-btn {
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  transition: all 0.2s;
+}
+.filter-btn.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--glow);
+}
+.filter-btn:hover:not(.active) { color: var(--fg); border-color: rgba(255,255,255,0.2); }
+
+.filter-btn .chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.15);
+  color: var(--fg);
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 6px;
+  transition: all 0.2s;
+}
+.filter-btn.active .chip-count {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+.clear-filters-btn {
+  display: none;
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface-elev);
+  color: var(--primary);
+  transition: all 0.2s;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+.clear-filters-btn.visible {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.clear-filters-btn:active { transform: scale(0.97); }
+
+/* ── TRENDING HERO ── */
+.hero-wrap { padding: 12px 20px 0; }
+@media (min-width: 768px) { .hero-wrap { padding: 16px 24px 0; } }
+
+.hero {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  background: var(--surface);
+  cursor: pointer;
+}
+@media (min-width: 768px) { .hero { aspect-ratio: 21/9; } }
+
+.hero img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.hero:hover img { transform: scale(1.04); }
+
+.hero .overlay-veil { position: absolute; inset: 0; }
+.hero .overlay-top  { position: absolute; inset: 0; }
+
+.hero-badge {
+  position: absolute; top: 12px; left: 12px;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(230,57,70,0.92);
+  color: #fff;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 999px;
+  box-shadow: var(--glow);
+}
+
+.hero-content {
+  position: absolute;
+  bottom: 16px; left: 16px; right: 16px;
+}
+@media (min-width: 768px) {
+  .hero-content { bottom: 28px; left: 28px; right: 28px; max-width: 480px; }
+}
+
+.hero-origin {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(28,28,38,0.8);
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 500;
+  backdrop-filter: blur(8px);
+  margin-bottom: 8px;
+}
+
+.hero-title {
+  font-family: var(--font-title);
+  font-size: 34px; letter-spacing: 2px;
+  line-height: 1;
+  color: var(--fg);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+}
+@media (min-width: 768px) { .hero-title { font-size: 52px; } }
+
+.hero-sub {
+  font-size: 12px; color: var(--muted); margin-top: 4px;
+}
+
+.hero-desc {
+  font-size: 12px; color: rgba(240,238,232,0.75);
+  margin-top: 8px; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+@media (min-width: 768px) { .hero-desc { font-size: 13px; } }
+
+/* ── SECTION ── */
+.section { margin-top: 28px; }
+
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; margin-bottom: 12px;
+}
+@media (min-width: 768px) { .section-header { padding: 0 24px; } }
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.section-more {
+  font-size: 11px; font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--primary-dim);
+  transition: background 0.2s;
+}
+.section-more:hover { background: var(--primary-dim); }
+
+/* ── COMIC CARD (horizontal scroll) ── */
+.cards-row {
+  display: flex; gap: 12px;
+  overflow-x: auto; padding: 0 20px 4px;
+}
+.cards-row::-webkit-scrollbar { display: none; }
+@media (min-width: 768px) { .cards-row { padding: 0 24px 4px; } }
+
+.comic-card {
+  flex-shrink: 0;
+  width: 140px;
+  cursor: pointer;
+  display: block;
+}
+
+.comic-card-cover {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+.comic-card-cover img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.comic-card:hover .comic-card-cover img { transform: scale(1.07); }
+.comic-card-cover .bg-veil { position: absolute; inset: 0; }
+
+.card-origin {
+  position: absolute; top: 8px; left: 8px;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(28,28,38,0.82);
+  padding: 3px 8px; border-radius: 999px;
+  font-size: 10px; font-weight: 500;
+  backdrop-filter: blur(6px);
+}
+
+.card-meta {
+  position: absolute; bottom: 8px; left: 8px; right: 8px;
+}
+.card-meta-title {
+  font-family: var(--font-display);
+  font-size: 12px; font-weight: 700; line-height: 1.3;
+  color: var(--fg);
+}
+.card-meta-ep {
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); margin-top: 2px;
+}
+
+/* ── STAR RATING ── */
+.card-stars {
+  display: flex; align-items: center; gap: 3px;
+  margin-top: 6px; padding: 0 2px;
+}
+.stars {
+  display: flex; gap: 1px;
+}
+.star { font-size: 11px; line-height: 1; }
+.star.full  { color: var(--gold); }
+.star.half  { color: var(--gold); opacity: 0.6; }
+.star.empty { color: var(--muted); opacity: 0.4; }
+.rating-num {
+  font-size: 10px; font-weight: 700;
+  color: var(--muted); margin-left: 2px;
+}
+
+/* ── DETAIL POPUP ── */
+#detail-popup {
+  position: fixed; inset: 0; z-index: 150;
+  display: none; align-items: flex-end; justify-content: center;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+}
+#detail-popup.open { display: flex; }
+
+.detail-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  animation: slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+  overflow: hidden;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.detail-cover-wrap {
+  position: relative;
+  width: 100%; aspect-ratio: 16/9;
+  overflow: hidden;
+}
+.detail-cover-wrap img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.detail-cover-wrap .bg-veil { position: absolute; inset: 0; }
+.detail-cover-wrap .bg-veil-top { position: absolute; inset: 0; }
+
+.detail-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(10,10,12,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; z-index: 2;
+  cursor: pointer;
+}
+
+.detail-origin-badge {
+  position: absolute; bottom: 12px; left: 12px;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(28,28,38,0.85);
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.detail-body { padding: 16px 20px 20px; }
+
+.detail-genre-tag {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--primary);
+  background: var(--primary-dim);
+  color: var(--primary);
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.detail-title {
+  font-family: var(--font-title);
+  font-size: 28px; letter-spacing: 2px;
+  line-height: 1; color: var(--fg);
+  margin-bottom: 2px;
+}
+.detail-kr {
+  font-size: 12px; color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.detail-stars {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 12px;
+}
+.detail-rating-num {
+  font-size: 13px; font-weight: 700; color: var(--gold);
+}
+.detail-rating-count {
+  font-size: 11px; color: var(--muted);
+}
+
+.detail-desc {
+  font-size: 13px; color: rgba(240,238,232,0.75);
+  line-height: 1.65; margin-bottom: 20px;
+}
+
+.btn-read-now {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-family: var(--font-title);
+  font-size: 20px; letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--primary), #b5001f);
+  color: #fff;
+  box-shadow: var(--glow);
+  transition: opacity 0.2s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-read-now:hover  { opacity: 0.92; }
+.btn-read-now:active { transform: scale(0.98); }
+
+/* ── GRID (desktop) ── */
+.cards-grid {
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 0 24px;
+}
+
+/* Mobile base for library/search grids — overridden at ≥768px below */
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  padding: 0 20px;
+}
+
+@media (min-width: 768px) {
+  /* Unified responsive grid for every comic-listing surface:
+     home rails (Trending / New Releases), auto-generated genre rows,
+     library, search results, and the See-all overlay. */
+  .cards-row,
+  .cards-grid,
+  .see-all-body,
+  .library-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    overflow-x: visible;
+    padding: 0 24px 4px;
+  }
+  .see-all-body { padding: 16px 24px; }
+  .cards-row .comic-card,
+  .cards-grid .grid-card { width: auto; }
+}
+@media (min-width: 1024px) {
+  .cards-row,
+  .cards-grid,
+  .see-all-body,
+  .library-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (min-width: 1280px) {
+  .cards-row,
+  .cards-grid,
+  .see-all-body,
+  .library-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+.grid-card {
+  cursor: pointer;
+  display: block;
+}
+.grid-card-cover {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+.grid-card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+.grid-card:hover .grid-card-cover img { transform: scale(1.05); }
+.grid-card-cover .bg-veil { position: absolute; inset: 0; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: rgba(10,10,12,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 max(12px, env(safe-area-inset-bottom));
+  display: flex; justify-content: space-around;
+}
+@media (min-width: 768px) { .bottom-nav { display: none; } }
+
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 4px 16px;
+  color: var(--muted);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: color 0.2s;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.nav-item svg { width: 20px; height: 20px; stroke-width: 1.8; }
+.nav-item.active { color: var(--primary); }
+.nav-item:hover:not(.active) { color: var(--fg); }
+
+/* ── READER OVERLAY ── */
+#reader {
+  position: fixed; inset: 0; z-index: 200;
+  background: #000;
+  display: none; flex-direction: column;
+}
+#reader.open { display: flex; }
+
+.reader-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px;
+  background: rgba(10,10,12,0.95);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.reader-back {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--fg);
+}
+.reader-title-wrap { flex: 1; overflow: hidden; }
+.reader-title {
+  font-family: var(--font-title);
+  font-size: 18px; letter-spacing: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.reader-ep { font-size: 11px; color: var(--muted); }
+.reader-pages { font-size: 12px; color: var(--muted); font-weight: 600; flex-shrink: 0; }
+
+.reader-body {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  background: #111;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reader-page-wrap {
+  width: 100%; max-width: 720px; margin: 0 auto;
+}
+.reader-page-wrap img {
+  width: 100%; display: block;
+}
+
+.reader-footer {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: rgba(10,10,12,0.95);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.page-nav-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: color 0.2s, background 0.2s;
+}
+.page-nav-btn:hover { color: var(--fg); background: var(--surface-elev); }
+input[type=range].page-range {
+  flex: 1; height: 3px;
+  -webkit-appearance: none;
+  background: var(--surface-elev);
+  border-radius: 2px; outline: none;
+}
+input[type=range].page-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  background: var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(230,57,70,0.6);
+}
+
+/* ── SEARCH OVERLAY ── */
+#search-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,10,12,0.97);
+  display: none; flex-direction: column;
+  padding: 0;
+}
+#search-overlay.open { display: flex; }
+
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.search-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg);
+  outline: none;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { border-color: var(--primary); }
+
+.search-results {
+  flex: 1; overflow-y: auto; padding: 16px;
+}
+.search-empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--muted);
+}
+.search-empty .big { font-size: 52px; margin-bottom: 12px; }
+.search-empty p { font-size: 13px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface-elev);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 9px 18px; border-radius: 999px;
+  font-size: 13px; font-weight: 600;
+  z-index: 9999;
+  opacity: 0; transition: all 0.3s;
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── LIBRARY VIEW ── */
+#library-view, #profile-view {
+  display: none; padding: 20px;
+}
+#library-view.active, #profile-view.active { display: block; }
+#home-view { display: block; }
+#home-view.hidden { display: none; }
+
+.view-title {
+  font-family: var(--font-title);
+  font-size: 32px; letter-spacing: 3px;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--muted);
+}
+.empty-state .icon { font-size: 56px; margin-bottom: 16px; }
+.empty-state p { font-size: 13px; }
+
+/* ── PROFILE ── */
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center; margin-bottom: 20px;
+}
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #b5001f);
+  margin: 0 auto 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.profile-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.profile-handle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.profile-badge {
+  display: inline-block; margin-top: 10px;
+  padding: 4px 12px; border-radius: 999px;
+  background: var(--primary-dim); border: 1px solid var(--primary);
+  color: var(--primary); font-size: 11px; font-weight: 700;
+}
+
+.stat-row {
+  display: flex; gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 16px;
+}
+.stat-item {
+  flex: 1; background: var(--surface-elev);
+  padding: 12px 8px; text-align: center;
+}
+.stat-value { font-family: var(--font-title); font-size: 22px; color: var(--fg); }
+.stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── PROFILE SECTION CARDS ── */
+.profile-section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin: 12px 20px 0;
+}
+.profile-section-title {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.profile-section-sub {
+  font-size: 12px; color: var(--muted);
+  margin-bottom: 12px;
+}
+.btn-profile-action {
+  width: 100%; padding: 12px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), #b5001f);
+  color: #fff;
+  box-shadow: var(--glow);
+  transition: opacity 0.2s, transform 0.15s;
+  border: none; cursor: pointer;
+}
+.btn-profile-action:hover  { opacity: 0.9; }
+.btn-profile-action:active { transform: scale(0.98); }
+.btn-profile-action:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-shield {
+  background: linear-gradient(135deg, #3a86ff, #0043a8);
+  box-shadow: 0 0 20px rgba(58,134,255,0.4);
+}
+.btn-share-card {
+  background: linear-gradient(135deg, #ffb347, #ff7a00);
+  box-shadow: 0 0 18px rgba(255,140,0,0.35);
+}
+.btn-row { display: flex; gap: 8px; margin-top: 10px; }
+.btn-row .btn-profile-action { flex: 1; }
+.btn-ghost {
+  background: var(--surface-elev);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+/* ── LEADERBOARD ── */
+.lb-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.lb-row.me { border-color: var(--primary); background: var(--primary-dim); }
+.lb-rank {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-title); font-size: 13px;
+  background: var(--border); color: var(--fg);
+  flex-shrink: 0;
+}
+.lb-rank.gold   { background: linear-gradient(135deg,#ffd86b,#c79100); color:#1a1100; }
+.lb-rank.silver { background: linear-gradient(135deg,#e6e6e6,#9e9e9e); color:#111; }
+.lb-rank.bronze { background: linear-gradient(135deg,#e0a070,#8a4a1f); color:#fff; }
+.lb-name { flex: 1; font-size: 13px; font-weight: 600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lb-pts  { font-family: var(--font-title); font-size: 13px; color: var(--primary); }
+.lb-meta { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: center; }
+
+.wallet-input {
+  width: 100%;
+  background: var(--surface-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--fg);
+  outline: none;
+}
+.wallet-input:focus { border-color: var(--primary); }
+
+/* ── REWARD POPUP ── */
+#reward-popup {
+  position: fixed; inset: 0; z-index: 400;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  padding: 24px;
+}
+#reward-popup.open { display: flex; }
+
+.reward-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 320px; width: 100%;
+  animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.reward-icon { font-size: 52px; margin-bottom: 12px; }
+.reward-title {
+  font-family: var(--font-title);
+  font-size: 22px; letter-spacing: 2px;
+  margin-bottom: 8px; color: var(--gold);
+}
+.reward-msg {
+  font-size: 13px; color: var(--muted);
+  line-height: 1.6; margin-bottom: 20px;
+}
+.btn-reward-close {
+  padding: 10px 28px; border-radius: 999px;
+  background: var(--primary);
+  color: #fff; font-weight: 700; font-size: 13px;
+  border: none; cursor: pointer;
+  box-shadow: var(--glow);
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+
+.stagger-1 { animation-delay: 0.05s; opacity: 0; }
+.stagger-2 { animation-delay: 0.1s;  opacity: 0; }
+.stagger-3 { animation-delay: 0.15s; opacity: 0; }
+.stagger-4 { animation-delay: 0.2s;  opacity: 0; }
+.stagger-5 { animation-delay: 0.25s; opacity: 0; }
+
+/* ── SLIDESHOW ── */
+.slideshow-wrap {
+  position: relative;
+  margin: 12px 20px 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.slideshow {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: var(--surface);
+}
+.slide {
+  position: absolute; inset: 0;
+  opacity: 0; transition: opacity 0.6s ease;
+  cursor: pointer;
+}
+.slide.active { opacity: 1; }
+.slide img { width: 100%; height: 100%; object-fit: cover; }
+.slide-dots {
+  position: absolute;
+  bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 2;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  cursor: pointer; transition: background 0.3s, transform 0.3s;
+}
+.dot.active { background: #fff; transform: scale(1.3); }
+
+/* ── SEE ALL OVERLAY ── */
+#see-all-overlay {
+  position: fixed; inset: 0; z-index: 250;
+  background: var(--bg);
+  display: none; flex-direction: column;
+}
+#see-all-overlay.open { display: flex; }
+.see-all-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: rgba(10,10,12,0.95);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.see-all-title {
+  font-family: var(--font-title);
+  font-size: 22px; letter-spacing: 2px; flex: 1;
+}
+.see-all-body {
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px,1fr));
+  gap: 12px; align-content: start;
+}
+</style>
+<script src='//libtl.com/sdk.js' data-zone='11003409' data-sdk='show_11003409'></script>
+</head>
+<body>
+<script>
+show_11003409({
+  type: 'inApp',
+  inAppSettings: {
+    frequency: 6,
+    capping: 1,
+    interval: 420,
+    timeout: 300,
+    everyPage: false
+  }
+});
+</script>
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-logo">
+      🐉 YONG
+      <span class="kr">용 코믹스</span>
+    </div>
+    <nav class="header-nav">
+      <a href="#" class="active" onclick="showView('home')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a href="#" onclick="showView('search')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
+        Search
+      </a>
+      <a href="#" onclick="showView('library')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+        Library
+      </a>
+      <a href="#" onclick="showView('profile')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="showView('search')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME VIEW -->
+    <div id="home-view">
+
+      <!-- Mobile title -->
+      <div class="mobile-title fade-in stagger-1">
+        <p class="label">용 코믹스</p>
+        <h1>YONG COMICS</h1>
+        <p>They said dragons aren't real. We put them on every page.</p>
+      </div>
+
+      <!-- Genre filter chips -->
+      <!-- Genre filter chips — auto-built from RSS labels -->
+      <div class="filters fade-in stagger-2" id="filters">
+        <button class="filter-btn active" onclick="filterGenre(this,'All')">All</button>
+      </div>
+
+      <!-- Hero Slideshow — latest 5 -->
+      <div class="hero-wrap fade-in stagger-3">
+        <div class="slideshow-wrap">
+          <div id="hero-slideshow" class="slideshow">
+            <!-- Populated by JS -->
+            <div class="slide active" style="background:var(--surface)">
+              <div class="loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+                <div class="spinner"></div>
+              </div>
+            </div>
+          </div>
+          <div id="slide-dots" class="slide-dots"></div>
+        </div>
+      </div>
+
+      <!-- Trending Now — latest 10 -->
+      <section class="section fade-in stagger-4">
+        <div class="section-header">
+          <h3 class="section-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--primary)"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>
+            Trending Now
+          </h3>
+          <a class="section-more" onclick="showAll('Trending','🔥')">See all</a>
+        </div>
+        <div class="cards-row no-scrollbar" id="trending-now-row"></div>
+      </section>
+
+      <!-- New Releases — posts 11–25 -->
+      <section class="section fade-in stagger-5">
+        <div class="section-header">
+          <h3 class="section-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gold)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            New Releases
+          </h3>
+          <a class="section-more" onclick="showAll('New Releases','🌟')">See all</a>
+        </div>
+        <div class="cards-row no-scrollbar" id="new-releases-row"></div>
+      </section>
+
+      <!-- Auto genre sections — built by JS -->
+      <div id="genre-sections"></div>
+
+      <!-- Infinite-scroll sentinel + retry slot -->
+      <div id="infinite-slot" style="padding:24px 20px 8px;text-align:center;font-size:13px;color:var(--muted)">
+        <div id="infinite-spinner" style="display:none"><div class="spinner" style="margin:0 auto"></div></div>
+        <div id="infinite-error" style="display:none;color:var(--fg)">
+          <p style="margin:0 0 10px">⚠️ Couldn't load more comics.</p>
+          <button class="btn-checkin" onclick="loadMoreComics()" style="padding:10px 22px;font-size:13px">Try again</button>
+        </div>
+        <div id="infinite-end" style="display:none;opacity:0.6">✅ All comics loaded</div>
+      </div>
+
+    </div>
+
+    <!-- LIBRARY VIEW -->
+    <div id="library-view">
+      <div class="view-title" style="padding:20px 20px 0">📚 LIBRARY</div>
+      <div id="library-content">
+        <div class="empty-state">
+          <div class="icon">🐉</div>
+          <p>Your library is empty.<br>Save comics from the detail popup.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE VIEW -->
+    <div id="profile-view">
+      <div class="view-title">⚔️ PROFILE</div>
+      <div class="profile-card">
+        <div class="profile-avatar" id="profile-avatar">🐉</div>
+        <div class="profile-name" id="profile-name">Loading…</div>
+        <div class="profile-handle" id="profile-handle">@yongreader</div>
+        <div class="profile-badge" id="profile-streak">🔥 Day 1 Streak</div>
+        <div class="stat-row">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-saved">0</div>
+            <div class="stat-label">Saved</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-points">0</div>
+            <div class="stat-label">🪙 Points</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Share Profile Card -->
+      <div class="profile-section-card">
+        <div class="profile-section-title">🎴 Your Profile Card</div>
+        <p class="profile-section-sub">Show off your stats, rank & streak — share to Telegram story or save it.</p>
+        <button class="btn-profile-action btn-share-card" onclick="openProfileCard()">
+          🎴 Generate My Card
+        </button>
+      </div>
+
+      <!-- Weekly Leaderboard -->
+      <div class="profile-section-card">
+        <div class="profile-section-title">🏆 Weekly Leaderboard</div>
+        <p class="profile-section-sub" id="lb-subtext">Top dragons this week · resets every Monday</p>
+        <div class="lb-list" id="lb-list">
+          <div style="text-align:center;color:var(--muted);font-size:12px;padding:10px">Loading…</div>
+        </div>
+        <div class="lb-meta" id="lb-myrank"></div>
+      </div>
+
+      <!-- 🤝 Refer & Earn -->
+      <div class="profile-section-card">
+        <div class="profile-section-title">🤝 Refer & Earn</div>
+        <p class="profile-section-sub">
+          Invite friends to Yong Comics. When they join through your link,
+          you both earn <strong>+5 🪙</strong>. Referrals are the only way to earn points.
+        </p>
+        <div class="stat-row" style="margin:10px 0 12px">
+          <div class="stat-item">
+            <div class="stat-value" id="ref-count">0</div>
+            <div class="stat-label">Friends</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="ref-points">0</div>
+            <div class="stat-label">🪙 Earned</div>
+          </div>
+        </div>
+        <input type="text" class="wallet-input" id="ref-link"
+          readonly onclick="this.select()" style="font-size:11px">
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn-profile-action" style="flex:1" onclick="copyReferralLink()">
+            📋 Copy Link
+          </button>
+          <button class="btn-profile-action btn-share-card" style="flex:1" onclick="shareReferralLink()">
+            ✈️ Share
+          </button>
+        </div>
+      </div>
+
+      <!-- Solana Wallet -->
+      <div class="profile-section-card">
+        <div class="profile-section-title">◎ Solana Wallet</div>
+        <p class="profile-section-sub" id="wallet-sub">Required for Yong Solana rewards · Changing costs 10 ads · Max 2 changes/month</p>
+        <input type="text" class="wallet-input" id="wallet-input"
+          placeholder="Enter your Solana wallet address">
+        <button class="btn-profile-action" id="save-wallet-btn"
+          style="display:none;margin-top:10px" onclick="saveWallet()">
+          Save Wallet
+        </button>
+        <button class="btn-profile-action" id="change-wallet-btn"
+          style="display:none;margin-top:10px" onclick="startWalletChange()">
+          🔁 Change Wallet (Watch 10 ads)
+        </button>
+      </div>
+
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px;padding-bottom:8px;">
+        용 코믹스 · Yong Comics · © 2026<br>
+        Every genre. No limits. 🐉
+      </p>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="showView('home')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button class="nav-item" id="nav-search" onclick="showView('search')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
+      Search
+    </button>
+    <button class="nav-item" id="nav-library" onclick="showView('library')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      Library
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="showView('profile')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </button>
+  </nav>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div id="search-overlay">
+  <div class="search-bar">
+    <button class="icon-btn" onclick="closeSearch()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <input class="search-input" id="search-input" type="text" placeholder="Search comics, genres, origins…" oninput="doSearch(this.value)" autofocus>
+  </div>
+  <div class="search-results" id="search-results">
+    <div class="search-empty">
+      <div class="big">🐉</div>
+      <p>Search for a comic, genre, or origin country</p>
+    </div>
+  </div>
+</div>
+
+<!-- READER OVERLAY -->
+<div id="reader">
+  <div class="reader-header">
+    <button class="reader-back icon-btn" onclick="closeReader()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="reader-title-wrap">
+      <div class="reader-title" id="reader-title">Title</div>
+      <div class="reader-ep" id="reader-ep">S01E01</div>
+    </div>
+    <div class="reader-pages" id="reader-pages">1 / 1</div>
+  </div>
+  <div class="reader-body" id="reader-body"></div>
+  <div class="reader-footer">
+    <button class="page-nav-btn" onclick="readerPrev()">‹</button>
+    <input type="range" class="page-range" id="reader-range" min="1" value="1" oninput="readerJump(this.value)">
+    <button class="page-nav-btn" onclick="readerNext()">›</button>
+  </div>
+</div>
+
+<!-- PROFILE CARD MODAL -->
+<div id="card-modal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:14px;overflow:auto">
+  <canvas id="card-canvas" width="720" height="1280" style="width:100%;max-width:320px;height:auto;border-radius:18px;box-shadow:0 12px 50px rgba(0,0,0,0.6);background:#0a0a0a"></canvas>
+  <div style="display:flex;gap:8px;width:100%;max-width:320px">
+    <button class="btn-profile-action btn-ghost" style="flex:1" onclick="closeCardModal()">Close</button>
+    <button class="btn-profile-action" style="flex:1" onclick="saveCardImage()">💾 Save</button>
+    <button class="btn-profile-action btn-share-card" style="flex:1" onclick="shareCardImage()">📤 Share</button>
+  </div>
+  <p style="font-size:11px;color:#888;text-align:center;max-width:320px;margin:0">Tip: "Share" opens Telegram → pick <b>Story</b> to post it to your story.</p>
+</div>
+
+<div id="see-all-overlay">
+  <div class="see-all-header">
+    <button class="icon-btn" onclick="closeSeeAll()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="see-all-title" id="see-all-title"></div>
+  </div>
+  <div class="see-all-body" id="see-all-grid"></div>
+</div>
+
+<!-- DETAIL POPUP -->
+<div id="detail-popup" onclick="handlePopupBackdrop(event)">
+  <div class="detail-sheet" id="detail-sheet">
+    <div class="detail-cover-wrap">
+      <img id="detail-img" src="" alt="">
+      <div class="bg-veil"></div>
+      <div class="bg-veil-top"></div>
+      <button class="detail-close" onclick="closePopup()">✕</button>
+      <button class="detail-close" id="detail-save-btn"
+        onclick="toggleLibrary(activeComic?.postId)"
+        style="right:52px;" aria-label="Save to library" title="Save to library">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      </button>
+      <div class="detail-origin-badge" id="detail-origin"></div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-genre-tag" id="detail-genre"></div>
+      <div class="detail-title" id="detail-title"></div>
+      <div class="detail-kr" id="detail-kr"></div>
+      <div class="detail-stars">
+        <!-- ratings removed -->
+      </div>
+      <div class="detail-desc" id="detail-desc"></div>
+      <button class="btn-read-now" id="detail-read-btn" onclick="startReading()">
+        🐉 READ NOW
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REWARD POPUP -->
+<div id="reward-popup">
+  <div class="reward-sheet">
+    <div class="reward-icon" id="reward-icon">🐉</div>
+    <div class="reward-title" id="reward-title">REWARD</div>
+    <div class="reward-msg" id="reward-msg"></div>
+    <button class="btn-reward-close" onclick="closeRewardPopup()">Awesome!</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════
+const BLOG_URLS  = [
+  'https://yongcomics.blogspot.com',
+  'https://yongproduction.blogspot.com',
+];
+const BLOG_URL   = BLOG_URLS[0]; // legacy
+const RSS_BASE   = `${BLOG_URL}/feeds/posts/default`; // legacy
+const MAX_POSTS = 100;
+const CACHE_TTL = 5 * 60 * 1000;
+
+const GENRES = ['Action','Romance','Comedy','Drama','Horror','Fantasy','Sci-Fi','Family Drama','Literary Fiction','Thriller','Mystery','Adventure'];
+const COUNTRIES = ['Nigeria','Korea','Japan','USA','UK','France','China','India',
+                   'Brazil','Ghana','Egypt','Canada','Australia','Germany','Spain'];
+const FLAGS = {
+  Nigeria:'🇳🇬', Korea:'🇰🇷', Japan:'🇯🇵', USA:'🇺🇸', UK:'🇬🇧',
+  France:'🇫🇷', China:'🇨🇳', India:'🇮🇳', Brazil:'🇧🇷', Ghana:'🇬🇭',
+  Egypt:'🇪🇬', Canada:'🇨🇦', Australia:'🇦🇺', Germany:'🇩🇪', Spain:'🇪🇸'
+};
+
+
+const GENRE_ICONS = {
+  Action:'⚔️', Romance:'💖', Comedy:'😂', Drama:'🎭',
+  Horror:'👻', Fantasy:'🧙', 'Sci-Fi':'🚀',
+  'Family Drama':'👨‍👩‍👧', 'Literary Fiction':'📝',
+  Thriller:'🔪', Mystery:'🕵️', Adventure:'🗺️',
+  'General':'📖'
+};
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let currentView   = 'home';
+let currentGenre  = 'All';
+let allComics     = [];       // parsed from RSS
+let activeComic   = null;     // currently open popup/reader
+let slideIndex   = 0;
+let slideTimer   = null;
+const RSS_CACHE  = {};
+let nextStart    = 1;        // next start-index to request for current label
+let currentLabel = '';       // active label (empty = all)
+let endReached   = false;    // no more pages available
+let isLoadingMore = false;
+let infiniteObserver = null;
+let knownGenres = new Set(); // every genre ever seen
+let baseComics  = [];        // full unfiltered set for counts
+const PERSIST_KEY = 'yong_state';
+
+function rememberGenres(comics) {
+  comics.forEach(c => { if (c.genre) knownGenres.add(c.genre); });
+}
+
+function savePersistState() {
+  try {
+    localStorage.setItem(PERSIST_KEY, JSON.stringify({
+      label:  currentLabel,
+      count:  allComics.length,
+      scroll: window.scrollY || 0,
+      time:   Date.now(),
+    }));
+  } catch(_) {}
+}
+function loadPersistState() {
+  try { return JSON.parse(localStorage.getItem(PERSIST_KEY) || 'null'); }
+  catch(_) { return null; }
+}
+
+// ══════════════════════════════════════════
+//  RSS FETCH & PARSE
+// ══════════════════════════════════════════
+async function fetchComics(label = '') {
+  const key = label || 'all';
+  const now = Date.now();
+  if (RSS_CACHE[key] && now - RSS_CACHE[key].time < CACHE_TTL) {
+    const cached = RSS_CACHE[key].data;
+    nextStart  = cached.length + 1;
+    endReached = cached.length < MAX_POSTS;
+    return cached;
+  }
+  const isGeneral = label === 'General';
+  const labelPath = (label && !isGeneral) ? `/-/${encodeURIComponent(label)}` : '';
+  const PAGE_SIZE = 50;
+  try {
+    // Fetch from all blogs in parallel, then merge
+    const perBlog = await Promise.all(BLOG_URLS.map(async (blogUrl) => {
+      const out = [];
+      const sourceLabel = blogUrl.includes('yongproduction') ? 'Yong Production' : 'Yong Comics';
+      for (let start = 1; start <= MAX_POSTS; start += PAGE_SIZE) {
+        const entries = await fetchPage(blogUrl, labelPath, start, PAGE_SIZE).catch(() => []);
+        if (!entries.length) break;
+        out.push(...entries.map(e => ({ ...parseEntry(e), source: sourceLabel })));
+        if (entries.length < PAGE_SIZE) break;
+      }
+      return out;
+    }));
+    // Merge + dedupe by postId, sort newest first
+    const seen = new Set();
+    const all = [];
+    for (const list of perBlog) for (const c of list) {
+      if (seen.has(c.postId)) continue;
+      seen.add(c.postId);
+      all.push(c);
+    }
+    all.sort((a,b) => (b.publishedAt || 0) - (a.publishedAt || 0));
+
+    // Client-side filter for General (no Blogger label exists for it)
+    const result = isGeneral ? all.filter(c => c.genre === 'General') : all;
+
+    // Remember genres and keep base set for counts
+    rememberGenres(result);
+    if (!label) baseComics = result;
+
+    RSS_CACHE[key] = { data: result, time: now };
+    nextStart = result.length + 1;
+    endReached = true; // pagination falls back to single-blog logic below
+    return result;
+  } catch(e) {
+    console.error('RSS fetch failed', e);
+    return RSS_CACHE[key]?.data || [];
+  }
+}
+
+// Fetch one page from a Blogger blog via JSONP
+function fetchPage(blogUrl, labelPath, start, pageSize) {
+  const cbName = `__yongCb_${Date.now()}_${Math.floor(Math.random()*1e6)}`;
+  const url = `${blogUrl}/feeds/posts/default${labelPath}?alt=json-in-script` +
+              `&max-results=${pageSize}&start-index=${start}` +
+              `&callback=${cbName}&_=${Date.now()}`;
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const cleanup = () => { delete window[cbName]; script.remove(); };
+    const timer = setTimeout(() => { cleanup(); reject(new Error('RSS timeout')); }, 15000);
+    window[cbName] = (data) => { clearTimeout(timer); cleanup(); resolve(data.feed?.entry || []); };
+    script.onerror = () => { clearTimeout(timer); cleanup(); reject(new Error('RSS script error')); };
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+
+// Append next page of older comics on demand
+async function loadMoreComics() {
+  if (isLoadingMore || endReached) return;
+  isLoadingMore = true;
+  const slot   = document.getElementById('infinite-slot');
+  const spin   = document.getElementById('infinite-spinner');
+  const errEl  = document.getElementById('infinite-error');
+  const endEl  = document.getElementById('infinite-end');
+  if (errEl) errEl.style.display = 'none';
+  if (endEl) endEl.style.display = 'none';
+  if (spin)  spin.style.display  = 'block';
+  try {
+    const isGeneral = currentLabel === 'General';
+    const labelPath = (currentLabel && !isGeneral) ? `/-/${encodeURIComponent(currentLabel)}` : '';
+    const PAGE_SIZE = 50;
+    const entries = await fetchPage(BLOG_URLS[0], labelPath, nextStart, PAGE_SIZE);
+    if (!entries.length) {
+      endReached = true;
+      if (spin) spin.style.display = 'none';
+      if (endEl) endEl.style.display = 'block';
+      return;
+    }
+    const more = entries.map(parseEntry);
+    const filtered = isGeneral ? more.filter(c => c.genre === 'General') : more;
+    allComics = allComics.concat(filtered);
+    rememberGenres(filtered);
+    // refresh cache so back/forth view stays consistent
+    const key = currentLabel || 'all';
+    RSS_CACHE[key] = { data: allComics, time: Date.now() };
+    nextStart += entries.length;
+    if (entries.length < PAGE_SIZE) endReached = true;
+
+    // Re-render rows + genre sections with the expanded list
+    renderRow('trending-now-row', allComics.slice(0, 10));
+    renderRow('new-releases-row', getNewReleases(allComics));
+    buildGenreSections(allComics);
+    buildFilterChips(allComics);
+    savePersistState();
+
+    if (spin) spin.style.display = 'none';
+    if (endReached && endEl) endEl.style.display = 'block';
+  } catch(e) {
+    console.error(e);
+    if (spin)  spin.style.display  = 'none';
+    if (errEl) errEl.style.display = 'block';
+  } finally {
+    isLoadingMore = false;
+  }
+}
+
+function parseEntry(entry) {
+  // Post ID — last part of the id string
+  const idRaw  = entry.id?.$t || '';
+  const postId = idRaw.split('-').pop() || idRaw;
+
+  // Title
+  const title = entry.title?.$t || 'Untitled';
+
+  // Labels
+  const labels   = (entry.category || []).map(c => c.term);
+  const country  = labels.find(l => COUNTRIES.includes(l)) || '';
+  // Genre: prefer known GENRES, otherwise fall back to first non-country label
+  const genre    = labels.find(l => GENRES.includes(l))
+                || labels.find(l => l && l !== country)
+                || 'General';
+  const flag     = country ? (FLAGS[country] || '🌍') : '🌍';
+  const origin   = country ? `${flag} ${country}` : '🌍 World';
+
+  // Cover image — first image in content
+  const content  = entry.content?.$t || entry.summary?.$t || '';
+  const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+  const cover    = imgMatch ? imgMatch[1] : '';
+
+  // Description — strip HTML tags
+  const desc = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+
+  // Post URL
+  const linkEntry = (entry.link || []).find(l => l.rel === 'alternate');
+  const blogUrl   = linkEntry?.href || '';
+
+  // Published date
+  const publishedAt = parsePublished(entry);
+  const ep = publishedAt
+    ? new Date(publishedAt).toLocaleDateString('en', { month: 'short', year: 'numeric' })
+    : '';
+
+  return { postId, title, genre, country, origin, cover, desc, content, blogUrl, ep, labels, publishedAt };
+}
+
+// Robustly parse the published timestamp from a Blogger RSS-JSON entry.
+// Falls back through published.$t -> updated.$t -> any ISO-ish string on the entry.
+function parsePublished(entry) {
+  const candidates = [
+    entry?.published?.$t,
+    entry?.updated?.$t,
+    typeof entry?.published === 'string' ? entry.published : null,
+    typeof entry?.updated   === 'string' ? entry.updated   : null,
+  ];
+  for (const raw of candidates) {
+    if (!raw || typeof raw !== 'string') continue;
+    const t = Date.parse(raw); // handles ISO 8601 incl. timezone offset
+    if (!isNaN(t) && t > 0) return t;
+  }
+  return 0;
+}
+
+// New Releases = posts published in the last 7 days (local time), newest first.
+// Falls back to the latest 10 comics overall if the 7-day window is empty.
+function getNewReleases(comics) {
+  // Local midnight 7 days ago — timezone-safe per the user's local clock.
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - 7);
+  const cutoff = d.getTime();
+
+  const sorted = comics
+    .filter(c => c.publishedAt > 0)
+    .sort((a, b) => b.publishedAt - a.publishedAt);
+
+  const recent = sorted.filter(c => c.publishedAt >= cutoff);
+  return recent.length ? recent : sorted.slice(0, 10);
+}
+
+// Extract images from full HTML content for reader
+function extractImages(htmlContent) {
+  const matches = [...htmlContent.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)];
+  return matches.map(m => m[1]);
+}
+
+// ══════════════════════════════════════════
+//  📚 LIBRARY (localStorage)
+// ══════════════════════════════════════════
+function getLibrary() {
+  return JSON.parse(localStorage.getItem('yong_library') || '{}');
+}
+
+function saveLibrary(lib) {
+  localStorage.setItem('yong_library', JSON.stringify(lib));
+}
+
+function isInLibrary(postId) {
+  return !!getLibrary()[postId];
+}
+
+function toggleLibrary(postId) {
+  const lib = getLibrary();
+  if (lib[postId]) {
+    delete lib[postId];
+    saveLibrary(lib);
+    updateSaveBtn(postId);
+    showToast('Removed from Library');
+  } else {
+    if (!activeComic) return;
+    lib[postId] = {
+      postId,
+      title:   activeComic.title,
+      cover:   activeComic.cover,
+      genre:   activeComic.genre,
+      origin:  activeComic.origin,
+      blogUrl: activeComic.blogUrl,
+      saved_at: Date.now()
+    };
+    saveLibrary(lib);
+    updateSaveBtn(postId);
+    showToast('🔖 Saved to Library!');
+  }
+  renderLibrary();
+}
+
+function updateSaveBtn(postId) {
+  const btn = document.getElementById('detail-save-btn');
+  if (!btn) return;
+  const saved = isInLibrary(postId);
+  btn.style.color = saved ? 'var(--primary)' : 'var(--fg)';
+  const svg = btn.querySelector('svg');
+  if (svg) svg.setAttribute('fill', saved ? 'currentColor' : 'none');
+  btn.title = saved ? 'Saved — tap to remove' : 'Save to library';
+}
+
+function renderLibrary() {
+  const lib  = getLibrary();
+  const items = Object.values(lib).sort((a,b) => b.saved_at - a.saved_at);
+  const wrap  = document.getElementById('library-content');
+  if (!wrap) return;
+
+  if (!items.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">🐉</div>
+      <p>Your library is empty.<br>Save comics from the detail popup.</p></div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<div class="library-grid">
+    ${items.map(c => `
+      <div class="grid-card" onclick="showPopupFromLibrary('${c.postId}')">
+        <div class="grid-card-cover">
+          <img src="${c.cover}" alt="${c.title}" loading="lazy">
+          <div class="bg-veil"></div>
+          <div class="card-origin">${c.origin}</div>
+          <div class="card-meta">
+            <div class="card-meta-title">${c.title}</div>
+            <div class="card-meta-ep">${c.genre}</div>
+          </div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function showPopupFromLibrary(postId) {
+  const lib = getLibrary();
+  const c   = lib[postId];
+  if (!c) return;
+  // Find in allComics if loaded, else build minimal object
+  const full = allComics.find(x => x.postId === postId);
+  showPopup(full || { ...c, ep: '', desc: '', content: '' });
+}
+
+// ══════════════════════════════════════════
+//  CARD RENDERING
+// ══════════════════════════════════════════
+function renderCards(rowId, gridId, comics) {
+  const row  = document.getElementById(rowId);
+  const grid = document.getElementById(gridId);
+  if (row)  row.innerHTML  = comics.length ? comics.map(c => cardHTML(c, 'comic-card')).join('') : '<p style="padding:20px;color:var(--muted);font-size:13px;">No comics yet — check back soon! 🐉</p>';
+  if (grid) grid.innerHTML = comics.length ? comics.map(c => cardHTML(c, 'grid-card', true)).join('') : '';
+}
+
+function cardHTML(c, cls, isGrid = false) {
+  const coverCls = isGrid ? 'grid-card-cover' : 'comic-card-cover';
+  return `
+  <div class="${cls}" onclick="showPopup(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+    <div class="${coverCls}">
+      ${c.cover ? `<img src="${c.cover}" alt="${c.title}" loading="lazy">` : '<div style="width:100%;height:100%;background:var(--surface-elev)"></div>'}
+      <div class="bg-veil"></div>
+      <div class="card-origin">${c.origin}</div>
+      <div class="card-meta">
+        <div class="card-meta-title">${c.title}</div>
+        <div class="card-meta-ep">${c.ep} · ${c.genre}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+//  LOAD & DISPLAY COMICS
+// ══════════════════════════════════════════
+// ══════════════════════════════════════════
+//  SLIDESHOW
+// ══════════════════════════════════════════
+function buildSlideshow(comics) {
+  const slides = comics.slice(0, 5);
+  const wrap   = document.getElementById('hero-slideshow');
+  const dotsEl = document.getElementById('slide-dots');
+  if (!wrap || !slides.length) return;
+
+  wrap.innerHTML = slides.map((c, i) => {
+    const data = JSON.stringify(c).replace(/"/g, '&quot;');
+    return `<div class="slide ${i===0?'active':''}" onclick="showPopup(${data})">
+      ${c.cover ? `<img src="${c.cover}" alt="${c.title}" loading="lazy">` : ''}
+      <div class="bg-veil" style="position:absolute;inset:0"></div>
+      <div class="bg-veil-top" style="position:absolute;inset:0"></div>
+      <div class="hero-badge" style="position:absolute;top:12px;left:12px">🔥 Trending</div>
+      <div class="hero-content" style="position:absolute;bottom:16px;left:16px;right:16px">
+        <div class="hero-origin">${c.origin}</div>
+        <h2 class="hero-title">${c.title}</h2>
+        <p class="hero-sub">${c.ep}${c.genre?' · '+c.genre:''}</p>
+        <p class="hero-desc">${c.desc}</p>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (dotsEl) {
+    dotsEl.innerHTML = slides.map((_, i) =>
+      `<span class="dot ${i===0?'active':''}" onclick="goSlide(${i})"></span>`
+    ).join('');
+  }
+
+  slideIndex = 0;
+  if (slideTimer) clearInterval(slideTimer);
+  slideTimer = setInterval(() => goSlide((slideIndex + 1) % slides.length), 4000);
+}
+
+function goSlide(index) {
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.dot');
+  slides.forEach((s, i) => s.classList.toggle('active', i === index));
+  dots.forEach((d, i)   => d.classList.toggle('active', i === index));
+  slideIndex = index;
+}
+
+// ══════════════════════════════════════════
+//  AUTO GENRE SECTIONS
+// ══════════════════════════════════════════
+function buildGenreSections(comics) {
+  const container = document.getElementById('genre-sections');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // Include hardcoded GENRES present in the data, plus any extra tags from posts (e.g. Yong Production labels)
+  const allPresent = Array.from(new Set(comics.map(c => c.genre).filter(Boolean)));
+  const presentGenres = [
+    ...GENRES.filter(g => allPresent.includes(g)),
+    ...allPresent.filter(g => !GENRES.includes(g)),
+  ];
+  presentGenres.forEach(genre => {
+    const filtered = comics.filter(c => c.genre === genre);
+    if (!filtered.length) return;
+    const icon = GENRE_ICONS[genre] || '📖';
+    const rowId = 'genre-row-' + genre.replace(/\s+/g, '-');
+    container.insertAdjacentHTML('beforeend', `
+      <section class="section">
+        <div class="section-header">
+          <h3 class="section-title">${icon} ${genre}</h3>
+          <a class="section-more" onclick="showAll('${genre}','${icon}')">See all</a>
+        </div>
+        <div class="cards-row no-scrollbar" id="${rowId}"></div>
+      </section>`);
+    const row = document.getElementById(rowId);
+    if (row) row.innerHTML = filtered.map(c => cardHTML(c, 'comic-card')).join('');
+  });
+}
+
+// ══════════════════════════════════════════
+//  SEE ALL
+// ══════════════════════════════════════════
+function showAll(label, icon) {
+  const comics = label === 'Trending'
+    ? allComics.slice(0, 10)
+    : label === 'New Releases'
+    ? getNewReleases(allComics)
+    : allComics.filter(c => c.genre === label);
+
+  const overlay = document.getElementById('see-all-overlay');
+  const title   = document.getElementById('see-all-title');
+  const grid    = document.getElementById('see-all-grid');
+  if (!overlay) return;
+
+  title.textContent = `${icon} ${label}`;
+  grid.innerHTML    = comics.map(c => cardHTML(c, 'grid-card', true)).join('');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSeeAll() {
+  document.getElementById('see-all-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ══════════════════════════════════════════
+//  LOAD & DISPLAY COMICS
+// ══════════════════════════════════════════
+function renderRow(rowId, comics) {
+  const el = document.getElementById(rowId);
+  if (!el) return;
+  el.innerHTML = comics.length
+    ? comics.map(c => cardHTML(c, 'comic-card')).join('')
+    : '<p style="padding:20px;color:var(--muted);font-size:13px">No comics yet 🐉</p>';
+}
+
+async function loadComics(label = '') {
+  const trendRow = document.getElementById('trending-now-row');
+  if (trendRow) trendRow.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+
+  currentLabel = label;
+  endReached   = false;
+  nextStart    = 1;
+  // reset infinite-scroll UI
+  const errEl = document.getElementById('infinite-error');
+  const endEl = document.getElementById('infinite-end');
+  if (errEl) errEl.style.display = 'none';
+  if (endEl) endEl.style.display = 'none';
+
+  const comics = await fetchComics(label);
+  allComics    = comics;
+  if (!label) baseComics = comics;
+
+  buildSlideshow(comics);
+  renderRow('trending-now-row', comics.slice(0, 10));
+  renderRow('new-releases-row', getNewReleases(comics));
+  buildGenreSections(comics);
+  buildFilterChips(comics);
+  setupInfiniteScroll();
+  savePersistState();
+}
+
+// Build filter chips from known genres with live counts + clear button
+function buildFilterChips(comics) {
+  const wrap = document.getElementById('filters');
+  if (!wrap) return;
+
+  // Update known genres from current batch
+  rememberGenres(comics);
+
+  // Build stable ordered list from every genre ever seen
+  const known = Array.from(knownGenres);
+  const ordered = [
+    ...GENRES.filter(g => known.includes(g)),
+    ...known.filter(g => !GENRES.includes(g) && g !== 'General'),
+  ];
+  if (known.includes('General')) ordered.push('General');
+
+  // Count from the full unfiltered set if available, else current set
+  const countSource = baseComics.length ? baseComics : comics;
+  const counts = {};
+  counts['All'] = countSource.length;
+  ordered.forEach(g => {
+    counts[g] = countSource.filter(c => c.genre === g).length;
+  });
+
+  // Is any filter currently active?
+  const searchOpen = document.getElementById('search-overlay')?.classList.contains('open');
+  const hasActiveFilter = currentLabel || searchOpen;
+
+  let html = `<button class="filter-btn${currentLabel ? '' : ' active'}" onclick="filterGenre(this,'All')">All <span class="chip-count">${counts['All']}</span></button>`;
+
+  ordered.forEach(g => {
+    if (!counts[g]) return; // hide empty genres
+    const icon = GENRE_ICONS[g] || '📖';
+    const active = currentLabel === g ? ' active' : '';
+    html += `<button class="filter-btn${active}" onclick="filterGenre(this,'${g.replace(/'/g,"\\'")}')">${icon} ${g} <span class="chip-count">${counts[g]}</span></button>`;
+  });
+
+  if (hasActiveFilter) {
+    html += `<button class="clear-filters-btn visible" onclick="clearFilters()">✕ Clear</button>`;
+  }
+
+  wrap.innerHTML = html;
+}
+
+// IntersectionObserver-driven infinite scroll
+function setupInfiniteScroll() {
+  const slot = document.getElementById('infinite-slot');
+  if (!slot) return;
+  if (infiniteObserver) infiniteObserver.disconnect();
+  infiniteObserver = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting && !isLoadingMore && !endReached) {
+        loadMoreComics();
+      }
+    }
+  }, { rootMargin: '600px 0px' });
+  infiniteObserver.observe(slot);
+}
+
+// Persist scroll position on the home view
+window.addEventListener('scroll', () => {
+  if (currentView === 'home') savePersistState();
+}, { passive: true });
+
+// ══════════════════════════════════════════
+//  VIEW SWITCHING
+// ══════════════════════════════════════════
+function showView(view) {
+  if (view === 'search') { openSearch(); return; }
+
+  document.getElementById('home-view').classList.toggle('hidden', view !== 'home');
+  document.getElementById('library-view').classList.toggle('active', view === 'library');
+  document.getElementById('profile-view').classList.toggle('active', view === 'profile');
+
+  ['home','search','library','profile'].forEach(v => {
+    const el = document.getElementById(`nav-${v}`);
+    if (el) el.classList.toggle('active', v === view);
+  });
+
+  document.querySelectorAll('.header-nav a').forEach((a, i) => {
+    a.classList.toggle('active', i === ['home','search','library','profile'].indexOf(view));
+  });
+
+  if (view === 'library') renderLibrary();
+  currentView = view;
+}
+
+// ══════════════════════════════════════════
+//  DETAIL POPUP
+// ══════════════════════════════════════════
+function showPopup(c) {
+  // c can be object or JSON string from onclick attr
+  if (typeof c === 'string') c = JSON.parse(c);
+  activeComic = c;
+
+  document.getElementById('detail-img').src    = c.cover || '';
+  document.getElementById('detail-img').alt    = c.title;
+  document.getElementById('detail-origin').textContent = c.origin;
+  document.getElementById('detail-genre').textContent  = c.genre;
+  document.getElementById('detail-title').textContent  = c.title;
+  document.getElementById('detail-kr').textContent     = c.ep || '';
+  document.getElementById('detail-desc').textContent   = c.desc;
+
+  // Save button state
+  updateSaveBtn(c.postId);
+
+  document.getElementById('detail-popup').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePopup() {
+  document.getElementById('detail-popup').classList.remove('open');
+  document.body.style.overflow = '';
+  activeComic = null;
+}
+
+function handlePopupBackdrop(e) {
+  if (e.target === document.getElementById('detail-popup')) closePopup();
+}
+
+// ── Monetag config (uses existing zone 11003409 already loaded in <head>) ──
+const MONETAG_ZONE_ID = '11003409';
+const AD_FREQUENCY_MIN = 0; // minutes between ads per user (0 = every tap)
+
+function showRewardedAd() {
+  return new Promise((resolve) => {
+    const fn = window['show_' + MONETAG_ZONE_ID];
+    if (typeof fn !== 'function') {
+      console.warn('[ads] Monetag SDK not loaded — skipping ad');
+      return resolve();
+    }
+    // Rewarded Interstitial: user must watch to completion
+    fn().then(resolve).catch((e) => {
+      console.warn('[ads] ad error/skipped', e);
+      resolve(); // don't block reading on ad failure
+    });
+  });
+}
+
+// Show an ad every Nth tap on READ NOW (2 = every other tap)
+const AD_EVERY_N_TAPS = 2;
+function shouldShowAd() {
+  const n = parseInt(localStorage.getItem('yc_read_taps') || '0', 10) + 1;
+  localStorage.setItem('yc_read_taps', String(n));
+  return (n % AD_EVERY_N_TAPS) === 0;
+}
+
+async function startReading() {
+  const c = activeComic;
+  const btn = document.getElementById('detail-read-btn');
+  if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = '⏳ Loading ad…'; }
+
+  if (shouldShowAd()) {
+    await showRewardedAd();
+    localStorage.setItem('yc_last_ad', String(Date.now()));
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || '🐉 READ NOW'; }
+
+  closePopup();
+  openComic(c);
+  trackRead(c?.postId);
+}
+
+// ══════════════════════════════════════════
+//  READER — renders full RSS HTML content
+// ══════════════════════════════════════════
+function openComic(c) {
+  if (!c) return;
+
+  document.getElementById('reader-title').textContent = c.title;
+  document.getElementById('reader-ep').textContent    = `${c.origin} · ${c.ep} · ${c.genre}`;
+
+  const body = document.getElementById('reader-body');
+  body.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  document.getElementById('reader').classList.add('open');
+
+  // Extract images from RSS content for vertical scroll reader
+  const images = extractImages(c.content || '');
+
+  if (images.length > 0) {
+    // Render the FULL post HTML (text + images, in original order)
+    const range = document.getElementById('reader-range');
+    range.max   = images.length;
+    range.value = 1;
+    document.getElementById('reader-pages').textContent = `1 / ${images.length}`;
+
+    body.innerHTML = `<div class="reader-page-wrap" style="padding:16px 18px;color:var(--fg);font-size:15px;line-height:1.75;font-family:var(--font-body)">${c.content}</div>`;
+    // Make embedded images responsive
+    body.querySelectorAll('img').forEach(img => {
+      img.style.maxWidth = '100%';
+      img.style.height = 'auto';
+      img.style.display = 'block';
+      img.style.margin = '12px auto';
+      img.loading = 'lazy';
+    });
+
+    // Scroll → page indicator based on image positions
+    const imgs = body.querySelectorAll('img');
+    body.onscroll = () => {
+      let page = 1;
+      const top = body.scrollTop + 80;
+      imgs.forEach((im, i) => { if (im.offsetTop <= top) page = i + 1; });
+      document.getElementById('reader-range').value = page;
+      document.getElementById('reader-pages').textContent = `${page} / ${images.length}`;
+    };
+  } else {
+    // Text-only post
+    document.getElementById('reader-range').max   = 1;
+    document.getElementById('reader-range').value = 1;
+    document.getElementById('reader-pages').textContent = '';
+    body.innerHTML = `<div class="reader-page-wrap" style="padding:20px;color:var(--fg);font-size:15px;line-height:1.8">${c.content}</div>`;
+  }
+}
+
+function readerJump(val) {
+  document.getElementById('reader-pages').textContent =
+    `${val} / ${document.getElementById('reader-range').max}`;
+}
+
+function readerPrev() {
+  const r = document.getElementById('reader-range');
+  if (parseInt(r.value) > 1) { r.value--; readerJump(r.value); }
+}
+
+function readerNext() {
+  const r = document.getElementById('reader-range');
+  if (parseInt(r.value) < parseInt(r.max)) { r.value++; readerJump(r.value); }
+}
+
+function closeReader() {
+  document.getElementById('reader').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('search-input').focus(), 100);
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-results').innerHTML = `
+    <div class="search-empty">
+      <div class="big">🐉</div>
+      <p>Search for a comic, genre, or origin country</p>
+    </div>`;
+}
+
+function doSearch(q) {
+  const results = document.getElementById('search-results');
+  q = q.trim().toLowerCase();
+  if (!q) {
+    results.innerHTML = `<div class="search-empty"><div class="big">🐉</div><p>Search for a comic, genre, or origin country</p></div>`;
+    return;
+  }
+
+  const found = allComics.filter(c =>
+    c.title.toLowerCase().includes(q) ||
+    c.genre.toLowerCase().includes(q) ||
+    c.origin.toLowerCase().includes(q) ||
+    c.desc.toLowerCase().includes(q)
+  );
+
+  if (!found.length) {
+    results.innerHTML = `<div class="search-empty"><div class="big">🔍</div><p>No comics found for "<strong>${q}</strong>"</p></div>`;
+    return;
+  }
+
+  results.innerHTML = `<div class="library-grid">
+    ${found.map(c => cardHTML(c, 'grid-card', true)).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+//  GENRE FILTER — RSS label based
+// ══════════════════════════════════════════
+async function filterGenre(btn, genre) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentGenre = genre;
+  const label = genre === 'All' ? '' : genre;
+  await loadComics(label);
+  window.scrollTo({ top: 0 });
+  savePersistState();
+}
+
+function clearFilters() {
+  const searchOverlay = document.getElementById('search-overlay');
+  if (searchOverlay && searchOverlay.classList.contains('open')) {
+    closeSearch();
+  }
+  currentGenre = 'All';
+  currentLabel = '';
+  loadComics('');
+  window.scrollTo({ top: 0 });
+  savePersistState();
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════════════
+//  🔥 FIREBASE INIT
+// ══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyCJjC9pOMlJ_OgSaIfHCweSeXHve4GCFLY",
+  authDomain:        "yong-comics.firebaseapp.com",
+  projectId:         "yong-comics",
+  storageBucket:     "yong-comics.firebasestorage.app",
+  messagingSenderId: "271959806022",
+  appId:             "1:271959806022:web:7f28881aeec1d381fc7a47"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ══════════════════════════════════════════
+//  🐉 TELEGRAM + USER INIT
+// ══════════════════════════════════════════
+const tg    = window.Telegram?.WebApp;
+let tgUser  = null;
+let userDoc = null;
+
+async function initApp() {
+  if (tg) { tg.ready(); tg.expand(); tgUser = tg.initDataUnsafe?.user || null; }
+  if (!tgUser) {
+    tgUser = { id: 'test_user_001', first_name: 'Dragon',
+               last_name: 'Reader', username: 'yongreader', photo_url: null };
+  }
+  await loadOrCreateUser(tgUser);
+  renderProfile();
+  // Pay referral bonus on first launch (if eligible)
+  await maybePayReferralOnSignup();
+  renderProfile();
+  renderReferral();
+  // Restore persisted state (genre + scroll + page count)
+  const saved = loadPersistState();
+  const initialLabel = saved?.label || '';
+  await loadComics(initialLabel);
+  // Auto-load extra pages until we match the previously loaded count
+  if (saved && saved.count > allComics.length) {
+    let guard = 20; // max 20 extra pages safety
+    while (allComics.length < saved.count && !endReached && guard-- > 0) {
+      await loadMoreComics();
+    }
+  }
+  if (saved?.scroll) {
+    requestAnimationFrame(() => window.scrollTo(0, saved.scroll));
+  }
+}
+
+// ══════════════════════════════════════════
+//  FIRESTORE USER
+// ══════════════════════════════════════════
+// Pull ?startapp=ref_<id> from the Telegram launch params
+function getReferrerIdFromStartParam(selfId) {
+  try {
+    const sp = tg?.initDataUnsafe?.start_param || '';
+    const m  = /^ref[_-]?([A-Za-z0-9]+)$/i.exec(sp);
+    if (!m) return null;
+    const refId = String(m[1]);
+    if (!refId || refId === String(selfId)) return null;
+    return refId;
+  } catch { return null; }
+}
+
+async function loadOrCreateUser(u) {
+  const ref  = db.collection('users').doc(String(u.id));
+  const snap = await ref.get();
+  if (snap.exists) {
+    userDoc = snap.data();
+  } else {
+    const referredBy = getReferrerIdFromStartParam(u.id);
+    userDoc = {
+      telegram_id:   String(u.id),
+      first_name:    u.first_name  || 'Dragon',
+      last_name:     u.last_name   || '',
+      username:      u.username    || '',
+      photo_url:     u.photo_url   || '',
+      yong_points:   0,
+      comics_saved:  0,
+      solana_wallet: '',
+      wallet_change_ads: 0,        // ads watched toward current change
+      wallet_changes_month: 0,     // # of wallet changes this month
+      wallet_changes_month_key: '',// YYYY-M key
+      // ── REFERRAL ──
+      referred_by:        referredBy,   // referrer's telegram_id, or null
+      referral_rewarded:  false,        // becomes true after signup payout
+      referral_count:     0,            // friends I invited who triggered reward
+      referral_points:    0,            // points I earned from referrals
+      joined:        new Date().toISOString()
+    };
+    await ref.set(userDoc);
+  }
+}
+
+// Pay referrer + new user the first time the new user opens the app.
+// Idempotent via the referral_rewarded flag + transaction.
+// Enforces a daily cap on the referrer to reduce farming/abuse.
+const REFERRAL_REWARD       = 5;
+const REFERRAL_DAILY_CAP    = 10; // max referral payouts a referrer can receive per UTC day
+
+async function maybePayReferralOnSignup() {
+  if (!userDoc) return;
+  if (userDoc.referral_rewarded) return;
+  const refId = userDoc.referred_by;
+  if (!refId || refId === String(tgUser.id)) return;
+
+  const today       = utcDateStr();
+  const referrerRef = db.collection('users').doc(String(refId));
+  const myRef       = db.collection('users').doc(String(tgUser.id));
+
+  try {
+    const result = await db.runTransaction(async (tx) => {
+      const rSnap = await tx.get(referrerRef);
+      const mSnap = await tx.get(myRef);
+      if (!rSnap.exists || !mSnap.exists) return { status: 'missing' };
+
+      const mData = mSnap.data();
+      // Double-check inside tx — prevents double payment on concurrent calls
+      if (mData.referral_rewarded) return { status: 'already' };
+
+      const rData = rSnap.data();
+      const payoutsToday = rData.referral_payouts_date === today
+        ? (rData.referral_payouts_today || 0)
+        : 0;
+
+      // Mark the new user as rewarded regardless of cap, so we never retry
+      // and never double-pay them, even if the referrer is capped out.
+      const myUpdate = { referral_rewarded: true };
+
+      if (payoutsToday >= REFERRAL_DAILY_CAP) {
+        tx.update(myRef, myUpdate);
+        return { status: 'capped' };
+      }
+
+      // Pay both sides
+      tx.update(referrerRef, {
+        yong_points:            (rData.yong_points     || 0) + REFERRAL_REWARD,
+        referral_count:         (rData.referral_count  || 0) + 1,
+        referral_points:        (rData.referral_points || 0) + REFERRAL_REWARD,
+        referral_payouts_today: payoutsToday + 1,
+        referral_payouts_date:  today
+      });
+      tx.update(myRef, {
+        ...myUpdate,
+        yong_points: (mData.yong_points || 0) + REFERRAL_REWARD
+      });
+      return { status: 'paid' };
+    });
+
+    if (!result) return;
+    if (result.status === 'paid') {
+      userDoc.referral_rewarded = true;
+      userDoc.yong_points = (userDoc.yong_points || 0) + REFERRAL_REWARD;
+      showRewardPopup('🤝', 'REFERRAL BONUS',
+        `Welcome bonus: +${REFERRAL_REWARD} 🪙\nYour referrer also earned +${REFERRAL_REWARD} 🪙. Thanks for joining via a friend!`);
+    } else if (result.status === 'capped') {
+      userDoc.referral_rewarded = true;
+      console.info('[referral] referrer hit daily cap; new user marked rewarded without payout');
+    }
+  } catch (e) {
+    console.warn('[referral] payout failed', e);
+  }
+}
+
+async function saveToFirestore(updates) {
+  const ref = db.collection('users').doc(String(tgUser.id));
+  await ref.update(updates);
+  Object.assign(userDoc, updates);
+}
+
+// ══════════════════════════════════════════
+//  ⏰ DATE HELPERS
+// ══════════════════════════════════════════
+function utcDateStr() {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
+}
+function utcMonthKey() {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${now.getUTCMonth()}`;
+}
+
+// (Daily check-in, watch-ads-for-points, and streak-shield features removed.
+//  Points are now earned exclusively via referrals.)
+
+// ══════════════════════════════════════════
+//  ◎ SOLANA WALLET
+// ══════════════════════════════════════════
+const WALLET_CHANGE_AD_COST   = 10;
+const WALLET_MAX_CHANGES_MONTH = 2;
+let _walletChangeMode = false; // user tapped "Change" and is in ad-watching flow
+
+function renderWalletInput() {
+  const input = document.getElementById('wallet-input');
+  const saveBtn   = document.getElementById('save-wallet-btn');
+  const changeBtn = document.getElementById('change-wallet-btn');
+  const sub       = document.getElementById('wallet-sub');
+  if (!input || !userDoc) return;
+
+  // Reset wallet_changes counter if month changed
+  const monthKey = utcMonthKey();
+  if (userDoc.wallet_changes_month_key !== monthKey) {
+    userDoc.wallet_changes_month     = 0;
+    userDoc.wallet_changes_month_key = monthKey;
+  }
+  const changesUsed = userDoc.wallet_changes_month || 0;
+  const changesLeft = Math.max(0, WALLET_MAX_CHANGES_MONTH - changesUsed);
+  const hasWallet   = !!userDoc.solana_wallet;
+
+  input.value = userDoc.solana_wallet || '';
+
+  if (!hasWallet) {
+    // First-time set: free, no ad cost
+    input.readOnly = false;
+    input.oninput  = () => { saveBtn.style.display = 'block'; };
+    saveBtn.style.display   = input.value ? 'block' : 'none';
+    saveBtn.textContent     = 'Save Wallet';
+    changeBtn.style.display = 'none';
+    sub.textContent = `Required for Yong Solana rewards · First save is free`;
+    return;
+  }
+
+  // Wallet already set
+  if (_walletChangeMode) {
+    input.readOnly = false;
+    input.oninput  = () => { saveBtn.style.display = 'block'; };
+    const adsDone  = userDoc.wallet_change_ads || 0;
+    if (adsDone >= WALLET_CHANGE_AD_COST) {
+      saveBtn.style.display   = 'block';
+      saveBtn.textContent     = '✅ Save New Wallet';
+      changeBtn.style.display = 'none';
+      sub.textContent = `Ads watched: ${adsDone}/${WALLET_CHANGE_AD_COST} · Enter new address & save`;
+    } else {
+      saveBtn.style.display   = 'none';
+      changeBtn.style.display = 'block';
+      changeBtn.disabled      = false;
+      changeBtn.textContent   = `▶ Watch Ad (${adsDone}/${WALLET_CHANGE_AD_COST})`;
+      sub.textContent = `Watch ${WALLET_CHANGE_AD_COST - adsDone} more ad${WALLET_CHANGE_AD_COST - adsDone === 1 ? '' : 's'} to unlock wallet change · ${changesLeft} change${changesLeft === 1 ? '' : 's'} left this month`;
+    }
+  } else {
+    input.readOnly = true;
+    input.oninput  = null;
+    saveBtn.style.display   = 'none';
+    changeBtn.style.display = 'block';
+    if (changesLeft <= 0) {
+      changeBtn.disabled = true;
+      changeBtn.textContent = '🔒 Limit reached this month';
+      sub.textContent = `Max ${WALLET_MAX_CHANGES_MONTH} changes/month · Resets next month`;
+    } else {
+      changeBtn.disabled = false;
+      changeBtn.textContent = `🔁 Change Wallet (Watch ${WALLET_CHANGE_AD_COST} ads)`;
+      sub.textContent = `${changesLeft} of ${WALLET_MAX_CHANGES_MONTH} change${WALLET_MAX_CHANGES_MONTH === 1 ? '' : 's'} left this month · Cost: ${WALLET_CHANGE_AD_COST} ads`;
+    }
+  }
+}
+
+async function startWalletChange() {
+  if (!tgUser || !userDoc) return;
+  const monthKey = utcMonthKey();
+  if (userDoc.wallet_changes_month_key !== monthKey) {
+    await saveToFirestore({ wallet_changes_month: 0, wallet_changes_month_key: monthKey });
+  }
+  if ((userDoc.wallet_changes_month || 0) >= WALLET_MAX_CHANGES_MONTH) {
+    showToast('Monthly change limit reached.');
+    return;
+  }
+
+  _walletChangeMode = true;
+
+  // If already past the ad threshold (e.g. resumed mid-flow), just open input
+  if ((userDoc.wallet_change_ads || 0) >= WALLET_CHANGE_AD_COST) {
+    renderWalletInput();
+    return;
+  }
+
+  const btn = document.getElementById('change-wallet-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Ad loading…';
+
+  try {
+    await show_11003409('pop');
+  } catch(e) {
+    showToast('Ad failed. Try again.');
+    renderWalletInput();
+    return;
+  }
+
+  const newCount = (userDoc.wallet_change_ads || 0) + 1;
+  await saveToFirestore({ wallet_change_ads: newCount });
+  renderWalletInput();
+  if (newCount >= WALLET_CHANGE_AD_COST) {
+    showToast(`✅ Unlocked! Enter your new wallet address.`);
+  } else {
+    showToast(`Ad ${newCount}/${WALLET_CHANGE_AD_COST} watched.`);
+  }
+}
+
+async function saveWallet() {
+  const input = document.getElementById('wallet-input');
+  const wallet = input?.value?.trim();
+  if (!wallet) { showToast('Please enter a wallet address'); return; }
+  if (wallet.length < 32) { showToast('Invalid Solana address'); return; }
+
+  try {
+    const isChange = !!userDoc.solana_wallet && _walletChangeMode;
+    if (isChange) {
+      if ((userDoc.wallet_change_ads || 0) < WALLET_CHANGE_AD_COST) {
+        showToast(`Watch ${WALLET_CHANGE_AD_COST - (userDoc.wallet_change_ads || 0)} more ads first`);
+        return;
+      }
+      const monthKey = utcMonthKey();
+      const newMonthCount = userDoc.wallet_changes_month_key === monthKey
+        ? (userDoc.wallet_changes_month || 0) + 1
+        : 1;
+      await saveToFirestore({
+        solana_wallet:            wallet,
+        wallet_change_ads:        0,
+        wallet_changes_month:     newMonthCount,
+        wallet_changes_month_key: monthKey
+      });
+      _walletChangeMode = false;
+      showToast(`✅ Wallet updated! (${WALLET_MAX_CHANGES_MONTH - newMonthCount} change${WALLET_MAX_CHANGES_MONTH - newMonthCount === 1 ? '' : 's'} left this month)`);
+    } else {
+      await saveToFirestore({ solana_wallet: wallet });
+      showToast('✅ Wallet saved!');
+    }
+    renderWalletInput();
+  } catch(e) {
+    showToast('Failed to save wallet. Try again.');
+  }
+}
+
+// ══════════════════════════════════════════
+//  🎉 REWARD POPUP
+// ══════════════════════════════════════════
+function showRewardPopup(icon, title, msg) {
+  document.getElementById('reward-icon').textContent  = icon;
+  document.getElementById('reward-title').textContent = title;
+  document.getElementById('reward-msg').textContent   = msg;
+  document.getElementById('reward-popup').classList.add('open');
+}
+
+function closeRewardPopup() {
+  document.getElementById('reward-popup').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+//  RENDER PROFILE
+// ══════════════════════════════════════════
+function renderProfile() {
+  if (!userDoc) return;
+  const name = [userDoc.first_name, userDoc.last_name].filter(Boolean).join(' ');
+  document.getElementById('profile-name').textContent   = name || 'Dragon Reader';
+  document.getElementById('profile-handle').textContent =
+    userDoc.username ? `@${userDoc.username}` : 'Yong Reader';
+  document.getElementById('stat-points').textContent    = userDoc.yong_points  || 0;
+  document.getElementById('stat-saved').textContent     = userDoc.comics_saved || 0;
+  const streakEl = document.getElementById('profile-streak');
+  if (streakEl) streakEl.style.display = 'none';
+
+  const avatarEl = document.getElementById('profile-avatar');
+  if (userDoc.photo_url) {
+    avatarEl.innerHTML = `<img src="${userDoc.photo_url}"
+      style="width:100%;height:100%;border-radius:50%;object-fit:cover"
+      onerror="this.parentElement.innerHTML='🐉'">`;
+  } else {
+    avatarEl.textContent = '🐉';
+  }
+  renderWalletInput();
+  renderReferral();
+  loadLeaderboard();
+}
+
+// ══════════════════════════════════════════
+//  🤝 REFERRAL
+// ══════════════════════════════════════════
+const REF_BOT = 'YongComics_bot'; // ← your bot username (no @)
+
+function buildReferralLink() {
+  const id = tgUser?.id ? String(tgUser.id) : '';
+  return `https://t.me/${REF_BOT}?startapp=ref_${id}`;
+}
+function buildReferralShareText() {
+  return `🐉 Read free webcomics on Yong Comics — every genre, no limits.\nUse my link and we both get +5 🪙:`;
+}
+function renderReferral() {
+  const linkEl   = document.getElementById('ref-link');
+  const countEl  = document.getElementById('ref-count');
+  const pointsEl = document.getElementById('ref-points');
+  if (!linkEl) return;
+  linkEl.value = buildReferralLink();
+  countEl.textContent  = userDoc?.referral_count  || 0;
+  pointsEl.textContent = userDoc?.referral_points || 0;
+}
+async function copyReferralLink() {
+  const link = buildReferralLink();
+  try {
+    await navigator.clipboard.writeText(link);
+    showToast('🔗 Link copied!');
+  } catch {
+    const el = document.getElementById('ref-link');
+    el.select(); document.execCommand('copy');
+    showToast('🔗 Link copied!');
+  }
+}
+function shareReferralLink() {
+  const link = buildReferralLink();
+  const text = buildReferralShareText();
+  if (tg && typeof tg.openTelegramLink === 'function') {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+    tg.openTelegramLink(url);
+    return;
+  }
+  if (navigator.share) {
+    navigator.share({ title: 'Yong Comics', text, url: link }).catch(() => {});
+  } else {
+    copyReferralLink();
+  }
+}
+
+// ══════════════════════════════════════════
+//  🏆 WEEKLY LEADERBOARD
+// ══════════════════════════════════════════
+let _lbCache = { ts: 0, utcDay: null, rows: null, myRank: null };
+function _utcDayKey(ts) {
+  const d = new Date(ts);
+  return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+}
+async function loadLeaderboard() {
+  const listEl = document.getElementById('lb-list');
+  const myEl   = document.getElementById('lb-myrank');
+  if (!listEl) return;
+  // 5-min cache, but also auto-expires at midnight UTC
+  const now = Date.now();
+  const today = _utcDayKey(now);
+  // Earliest of: ts + 5 min, or next UTC midnight
+  const fiveMinExpiry = (_lbCache.ts || now) + 5*60*1000;
+  const nextUtcMidnight = Date.UTC(
+    new Date(now).getUTCFullYear(),
+    new Date(now).getUTCMonth(),
+    new Date(now).getUTCDate() + 1, 0, 0, 0, 0
+  );
+  const invalidatesAt = Math.min(fiveMinExpiry, nextUtcMidnight);
+  const reason = invalidatesAt === nextUtcMidnight ? 'midnight UTC' : '5-min TTL';
+  console.log('[leaderboard cache]', {
+    utcDayKey: today,
+    cachedDayKey: _lbCache.utcDay,
+    cachedAt: _lbCache.ts ? new Date(_lbCache.ts).toISOString() : null,
+    invalidatesAt: new Date(invalidatesAt).toISOString(),
+    invalidatesIn: Math.max(0, Math.round((invalidatesAt - now) / 1000)) + 's',
+    invalidatesBy: reason,
+    hit: !!(_lbCache.rows && _lbCache.utcDay === today && now - _lbCache.ts < 5*60*1000),
+  });
+  if (_lbCache.rows && _lbCache.utcDay === today && now - _lbCache.ts < 5*60*1000) {
+    renderLeaderboard(_lbCache.rows, _lbCache.myRank);
+    return;
+  }
+  try {
+    const snap = await db.collection('users')
+      .orderBy('yong_points', 'desc')
+      .limit(20)
+      .get();
+    const rows = [];
+    snap.forEach(doc => {
+      const d = doc.data() || {};
+      rows.push({
+        id: doc.id,
+        name: [d.first_name, d.last_name].filter(Boolean).join(' ') || d.username || 'Dragon',
+        points: d.yong_points || 0,
+        photo: d.photo_url || null,
+      });
+    });
+    let myRank = null;
+    if (tgUser) {
+      const meId = String(tgUser.id);
+      const idx = rows.findIndex(r => r.id === meId);
+      if (idx >= 0) myRank = idx + 1;
+      else if (userDoc) {
+        // estimate: count users with more points
+        const above = await db.collection('users')
+          .where('yong_points', '>', userDoc.yong_points || 0)
+          .get();
+        myRank = above.size + 1;
+      }
+    }
+    const nowSet = Date.now();
+    _lbCache = { ts: nowSet, utcDay: _utcDayKey(nowSet), rows, myRank };
+    renderLeaderboard(rows, myRank);
+  } catch (e) {
+    listEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:10px">Leaderboard unavailable</div>';
+  }
+}
+
+function renderLeaderboard(rows, myRank) {
+  const listEl = document.getElementById('lb-list');
+  const myEl   = document.getElementById('lb-myrank');
+  const meId   = tgUser ? String(tgUser.id) : null;
+  if (!rows.length) {
+    listEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:10px">No rankings yet — be the first!</div>';
+  } else {
+    listEl.innerHTML = rows.slice(0, 10).map((r, i) => {
+      const rank = i + 1;
+      const cls  = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+      const me   = r.id === meId ? ' me' : '';
+      const medal= rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+      return `<div class="lb-row${me}">
+        <div class="lb-rank ${cls}">${rank}</div>
+        <div class="lb-name">${medal} ${escapeHtml(r.name)}</div>
+        <div class="lb-pts">${r.points} 🪙</div>
+      </div>`;
+    }).join('');
+  }
+  myEl.textContent = myRank
+    ? `Your rank: #${myRank} · ${userDoc?.yong_points || 0} 🪙`
+    : '';
+  // cache for card
+  window._yongMyRank = myRank;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ══════════════════════════════════════════
+//  🎴 PROFILE CARD (canvas)
+// ══════════════════════════════════════════
+async function openProfileCard() {
+  const modal = document.getElementById('card-modal');
+  modal.style.display = 'flex';
+  await drawProfileCard();
+}
+function closeCardModal() {
+  document.getElementById('card-modal').style.display = 'none';
+}
+
+function loadImg(src) {
+  return new Promise(res => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => res(img);
+    img.onerror = () => res(null);
+    img.src = src;
+  });
+}
+
+async function drawProfileCard() {
+  const canvas = document.getElementById('card-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#1a0008');
+  bg.addColorStop(0.5, '#0a0a0a');
+  bg.addColorStop(1, '#0d0014');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Decorative blobs
+  const glow = ctx.createRadialGradient(W*0.85, H*0.15, 0, W*0.85, H*0.15, 400);
+  glow.addColorStop(0, 'rgba(229,9,20,0.45)');
+  glow.addColorStop(1, 'rgba(229,9,20,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow2 = ctx.createRadialGradient(W*0.15, H*0.85, 0, W*0.15, H*0.85, 500);
+  glow2.addColorStop(0, 'rgba(58,134,255,0.35)');
+  glow2.addColorStop(1, 'rgba(58,134,255,0)');
+  ctx.fillStyle = glow2;
+  ctx.fillRect(0, 0, W, H);
+
+  // Header watermark
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 38px serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('용 코믹스', 50, 90);
+  ctx.fillStyle = '#e50914';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillText('YONG COMICS', 50, 124);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '20px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('PROFILE CARD', W - 50, 100);
+
+  // Avatar circle
+  const cx = W/2, cy = 320, r = 130;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r+8, 0, Math.PI*2);
+  const ring = ctx.createLinearGradient(cx-r, cy-r, cx+r, cy+r);
+  ring.addColorStop(0, '#ffd86b');
+  ring.addColorStop(1, '#e50914');
+  ctx.fillStyle = ring;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.clip();
+  let drewPhoto = false;
+  if (userDoc?.photo_url) {
+    const img = await loadImg(userDoc.photo_url);
+    if (img) {
+      ctx.drawImage(img, cx-r, cy-r, r*2, r*2);
+      drewPhoto = true;
+    }
+  }
+  if (!drewPhoto) {
+    const grad = ctx.createLinearGradient(cx-r, cy-r, cx+r, cy+r);
+    grad.addColorStop(0, '#e50914');
+    grad.addColorStop(1, '#b5001f');
+    ctx.fillStyle = grad;
+    ctx.fillRect(cx-r, cy-r, r*2, r*2);
+    ctx.fillStyle = '#fff';
+    ctx.font = '110px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🐉', cx, cy);
+  }
+  ctx.restore();
+
+  // Name + handle
+  const name = [userDoc?.first_name, userDoc?.last_name].filter(Boolean).join(' ') || 'Dragon Reader';
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 46px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(name.slice(0, 22), cx, 500);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.font = '24px sans-serif';
+  ctx.fillText(userDoc?.username ? '@' + userDoc.username : '@yongreader', cx, 534);
+
+  // Streak badge
+  const streak = userDoc?.streak || 0;
+  const badgeW = 220, badgeH = 50, badgeY = 565;
+  ctx.fillStyle = 'rgba(229,9,20,0.18)';
+  ctx.strokeStyle = '#e50914';
+  ctx.lineWidth = 2;
+  roundRect(ctx, cx-badgeW/2, badgeY, badgeW, badgeH, 25, true, true);
+  ctx.fillStyle = '#ff6b6b';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`🔥 ${streak} Day Streak`, cx, badgeY + badgeH/2);
+
+  // Stats grid (Coins + Rank + Read)
+  const coins = userDoc?.yong_points || 0;
+  const read  = (typeof getReadCount === 'function') ? getReadCount() : 0;
+  const rank  = window._yongMyRank;
+  const rankTxt = rank ? '#' + rank : '—';
+
+  const stats = [
+    { label: 'TOTAL COINS', value: coins.toLocaleString(),  color: '#ffd86b', emoji: '🪙' },
+    { label: 'WEEKLY RANK', value: rankTxt,                 color: '#3a86ff', emoji: '🏆' },
+    { label: 'COMICS READ', value: String(read),            color: '#ff6b6b', emoji: '📖' },
+  ];
+  const gridY = 680, boxH = 180, gap = 20, pad = 50;
+  const boxW = (W - pad*2 - gap*2) / 3;
+  stats.forEach((s, i) => {
+    const x = pad + i*(boxW + gap);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, x, gridY, boxW, boxH, 16, true, true);
+    ctx.fillStyle = s.color;
+    ctx.font = '36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(s.emoji, x + boxW/2, gridY + 56);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillText(s.value, x + boxW/2, gridY + 110);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText(s.label, x + boxW/2, gridY + 150);
+  });
+
+  // Tagline
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = 'italic 22px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('"Every genre. No limits."', cx, 940);
+
+  // Big dragon glyph (decorative)
+  ctx.fillStyle = 'rgba(229,9,20,0.08)';
+  ctx.font = '320px serif';
+  ctx.fillText('🐉', cx, 1180);
+
+  // Footer watermark
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = 'bold 24px sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('용 코믹스 · YONG COMICS', cx, 1220);
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('t.me/YongComicsBot', cx, 1250);
+}
+
+function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y,   x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x,   y+h, r);
+  ctx.arcTo(x,   y+h, x,   y,   r);
+  ctx.arcTo(x,   y,   x+w, y,   r);
+  ctx.closePath();
+  if (fill)   ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+function cardToBlob() {
+  return new Promise(res => {
+    document.getElementById('card-canvas').toBlob(res, 'image/png', 0.95);
+  });
+}
+
+async function saveCardImage() {
+  const blob = await cardToBlob();
+  if (!blob) return showToast('Could not generate card');
+  const fileName = `yong-comics-card-${Date.now()}.png`;
+  const file = new File([blob], fileName, { type: 'image/png' });
+
+  // 1) Telegram WebApp: use native downloadFile (Bot API 8.0+) — required
+  //    inside the in-app webview because <a download> does nothing there.
+  try {
+    const tgw = window.Telegram?.WebApp;
+    if (tgw && typeof tgw.downloadFile === 'function') {
+      // downloadFile needs a public URL — upload via FileReader -> data URL
+      const dataUrl = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload  = () => res(r.result);
+        r.onerror = () => rej(r.error);
+        r.readAsDataURL(blob);
+      });
+      // Most TG clients reject data: URLs in downloadFile, so try it but
+      // fall through to native share if the user cancels or it errors.
+      try {
+        const ok = await new Promise((resolve) => {
+          let done = false;
+          try {
+            tgw.downloadFile({ url: dataUrl, file_name: fileName }, (accepted) => {
+              done = true; resolve(!!accepted);
+            });
+          } catch { resolve(false); }
+          setTimeout(() => { if (!done) resolve(false); }, 1500);
+        });
+        if (ok) { showToast('💾 Saving to your device…'); return; }
+      } catch(_) { /* fall through */ }
+    }
+  } catch(_) { /* fall through */ }
+
+  // 2) Web Share API with files — works on most mobile browsers & in-app
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Yong Comics card' });
+      showToast('💾 Save it from the share sheet');
+      return;
+    } catch(e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+
+  // 3) Open the image in a new tab so the user can long-press → Save
+  try {
+    const url = URL.createObjectURL(blob);
+    const opened = window.open(url, '_blank');
+    if (opened) {
+      showToast('🖼️ Long-press the image and choose Save');
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      return;
+    }
+    // 4) Last resort: anchor download (desktop browsers)
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('💾 Card saved');
+  } catch(_) {
+    showToast('Could not save card — try again');
+  }
+}
+
+function _tgStoryAvailable() {
+  const tg = window.Telegram?.WebApp;
+  if (!tg || typeof tg.shareToStory !== 'function') return false;
+  // shareToStory was added in Bot API 7.8 — older Telegram clients expose the
+  // method via the stub script but throw "WebAppMethodUnsupported" at runtime.
+  try {
+    if (typeof tg.isVersionAtLeast === 'function' && !tg.isVersionAtLeast('7.8')) return false;
+  } catch(_) { return false; }
+  return true;
+}
+
+async function shareCardImage() {
+  const blob = await cardToBlob();
+  if (!blob) return showToast('Could not generate card');
+  const file = new File([blob], 'yong-comics-card.png', { type: 'image/png' });
+
+  // Try Telegram shareToStory only when we can actually expect it to work.
+  if (_tgStoryAvailable()) {
+    let handed = false;
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error('read failed'));
+        reader.readAsDataURL(blob);
+      });
+      window.Telegram.WebApp.shareToStory(dataUrl, {
+        text: '🐉 My Yong Comics card — every genre, no limits.',
+        widget_link: { url: 'https://t.me/YongComicsBot', name: 'Read on Yong Comics' }
+      });
+      handed = true;
+      // Safety net: if Telegram silently rejects the call (some clients do
+      // nothing for data URLs), give the user a manual option shortly after.
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') fallbackShare(file);
+      }, 1200);
+      return;
+    } catch(_) {
+      if (!handed) { /* fall through to manual flow */ }
+    }
+  }
+  fallbackShare(file);
+}
+
+async function fallbackShare(file) {
+  // 1. Native Web Share with files (mobile browsers, some desktop)
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'Yong Comics',
+        text: '🐉 My Yong Comics profile card'
+      });
+      return;
+    } catch(e) {
+      if (e && e.name === 'AbortError') return; // user cancelled
+      // any other error → fall through to download
+    }
+  }
+  // 2. Last resort: download the PNG so the user can post it manually
+  try {
+    await saveCardImage();
+    showToast('💾 Saved — open your gallery and post to your story');
+  } catch(_) {
+    showToast('Could not save card — try again');
+  }
+}
+
+
+// ── Track comics read (local cache only — never written to Firestore;
+//    deduped so re-reading the same comic doesn't double-count) ──
+function getReadSet() {
+  try { return new Set(JSON.parse(localStorage.getItem('yong_read') || '[]')); }
+  catch { return new Set(); }
+}
+function saveReadSet(set) {
+  try { localStorage.setItem('yong_read', JSON.stringify([...set])); } catch {}
+}
+function getReadCount() { return getReadSet().size; }
+function trackRead(postId) {
+  if (!postId) return;
+  const set = getReadSet();
+  if (set.has(postId)) return; // already counted
+  set.add(postId);
+  saveReadSet(set);
+}
+
+// Start everything
+initApp();
+</script>
+</body>
+</html>
